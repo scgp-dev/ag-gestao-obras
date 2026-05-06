@@ -517,43 +517,45 @@ function onGoogleSignIn(response) {
   document.getElementById('login-erro').style.display = 'none';
 
   try {
-    // Decodificar o JWT do Google (payload base64)
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    const email   = payload.email;
-    const nome    = payload.name;
-    const avatar  = payload.picture;
+    // Decodificar JWT — padding seguro
+    const base64 = response.credential.split('.')[1]
+      .replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(decodeURIComponent(
+      atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join('')
+    ));
 
-    // Salvar sessão no sessionStorage
-    sessionStorage.setItem('user_email', email);
-    sessionStorage.setItem('user_nome',  nome);
-    sessionStorage.setItem('user_avatar',avatar);
-    sessionStorage.setItem('user_token', response.credential);
+    sessionStorage.setItem('user_email', payload.email  || '');
+    sessionStorage.setItem('user_nome',  payload.name   || payload.email || 'Usuário');
+    sessionStorage.setItem('user_avatar',payload.picture|| '');
+    sessionStorage.setItem('auth_ok',    '1');
 
-    // Mostrar app
-    entrar(nome, avatar);
+    entrar(payload.name || payload.email, payload.picture || '');
 
   } catch(e) {
+    console.error('OAuth error:', e);
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('login-erro').style.display = 'block';
+    document.getElementById('login-erro').textContent =
+      '⚠️ Erro ao processar login. Tente novamente.';
   }
 }
 
 function entrar(nome, avatar) {
   document.getElementById('tela-login').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('user-nome').textContent = nome;
+  document.getElementById('user-nome').textContent = nome || '';
   if (avatar) {
     const img = document.getElementById('user-avatar');
-    img.src = avatar;
-    img.style.display = 'block';
+    img.src = avatar; img.style.display = 'block';
   }
   carregarDados();
 }
 
 function sair() {
   sessionStorage.clear();
-  // Revogar token Google
-  google.accounts.id.disableAutoSelect();
+  try { google.accounts.id.disableAutoSelect(); } catch(e) {}
   document.getElementById('app').style.display = 'none';
   document.getElementById('tela-login').style.display = 'flex';
   document.getElementById('login-erro').style.display = 'none';
@@ -561,9 +563,10 @@ function sair() {
 
 // Verificar sessão existente ao carregar
 window.addEventListener('DOMContentLoaded', () => {
-  const nome   = sessionStorage.getItem('user_nome');
-  const avatar = sessionStorage.getItem('user_avatar');
-  if (nome) {
+  const ok    = sessionStorage.getItem('auth_ok');
+  const nome  = sessionStorage.getItem('user_nome');
+  const avatar= sessionStorage.getItem('user_avatar');
+  if (ok === '1' && nome) {
     entrar(nome, avatar);
   }
 });
@@ -828,12 +831,30 @@ async function carregarDados() {
     const resp = await fetch(CSV_URL + '&cachebust=' + Date.now());
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const csv = await resp.text();
+    if (!csv || csv.trim().length < 10) throw new Error('CSV vazio');
     parsearCSV(csv);
     const agora = new Date().toLocaleString('pt-BR');
     setStatus('ok', `Dados atualizados em ${agora}`);
   } catch(e) {
-    setStatus('err', `Erro ao carregar dados: ${e.message}. Verifique se a planilha está publicada.`);
-    // Mostrar dados zerados mas funcionais
+    console.error('[CSV] Erro:', e.message);
+    setStatus('err', `Erro ao carregar dados: ${e.message}`);
+    // Inicializar estrutura zerada — NÃO volta ao login
+    const ordemApoios = ['E1','P1','P2','P3','P4','P5','P6','P7','P8','P9','P10','P11',
+                         'P12','P13','P14','P15','P16','P17','P18','P19','P20','P21',
+                         'P22','P23','E2'];
+    DADOS_APOIOS = ordemApoios.map(id => {
+      const isE = ['E1','E2'].includes(id);
+      const fases = isE
+        ? [['Estacas',5],['Blocos',1],['Encontro',1]]
+        : [['Estacas',6],['Blocos',1],['Pilares',3],['Travessa',1]];
+      return {
+        id, tipo: isE ? 'Encontro' : 'Pilar',
+        fases: fases.map(([n,p]) => ({n, p, r:0, w:PESOS_FASE[`${id}/${n}`]||0, contrib:0})),
+        pesoTotal: fases.reduce((s,[n]) => s+(PESOS_FASE[`${id}/${n}`]||0), 0),
+        info: isE ? '5 estacas D=1,20m' : '6 estacas D=1,50m | 3 pilares'
+      };
+    });
+    DADOS_VAOS = [];
     renderizarTudo();
   }
 }
