@@ -251,21 +251,30 @@
     <div class="login-titulo">Ponte Graúna-Gaivotas</div>
     <div class="login-sub">Painel de Avanço Físico<br>Contrato 029/SIURB/2025 — Acesso restrito</div>
 
-    <!-- Botão Google Sign-In -->
+    <!-- Botão Google Sign-In customizado -->
     <div id="g_id_onload"
          data-client_id="167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com"
          data-callback="onGoogleSignIn"
          data-auto_prompt="false">
     </div>
-    <div class="g_id_signin"
-         data-type="standard"
-         data-size="large"
-         data-theme="outline"
-         data-text="signin_with"
-         data-shape="rectangular"
-         data-logo_alignment="left"
-         data-width="280">
-    </div>
+
+    <button id="btn-login" onclick="iniciarLogin()" style="
+      display:flex; align-items:center; gap:12px;
+      background:#fff; border:1px solid #dadce0; border-radius:6px;
+      padding:10px 24px; font-family:'Barlow',sans-serif;
+      font-size:14px; font-weight:500; color:#3c4043;
+      cursor:pointer; margin:0 auto; box-shadow:0 1px 3px rgba(0,0,0,.1);
+      transition:box-shadow .2s;
+    " onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.2)'"
+       onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,.1)'">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/>
+        <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/>
+        <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/>
+        <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.3z"/>
+      </svg>
+      Entrar com Google
+    </button>
 
     <div class="spinner" id="spinner"></div>
     <div class="login-erro" id="login-erro">
@@ -500,7 +509,7 @@
 // CONFIGURAÇÃO
 // ══════════════════════════════════════════════════════
 const CLIENT_ID = '167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com';
-const CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKTLXfMy_ka2vaQEPIF0iaXmM5b9VZE0MPH9DP9RVU49xl4vfrArWB-FVei7EjnA/pub?gid=750191343&single=true&output=csv';
+const CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRtcGH2JufPDsSZTl8w9IDpKeSk2dxKO2PJLIriNrS3y6QqaSkLRt7UgfzLRni2mQ/pub?gid=640700570&single=true&output=csv';
 
 // ══════════════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -512,48 +521,95 @@ let APOIO_SEL    = null;
 // ══════════════════════════════════════════════════════
 // AUTENTICAÇÃO GOOGLE OAUTH
 // ══════════════════════════════════════════════════════
+function iniciarLogin() {
+  document.getElementById('btn-login').disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('login-erro').style.display = 'none';
+
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback:   onGoogleSignIn,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
+
+  google.accounts.id.prompt(notification => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // Fallback: usar popup OAuth explícito
+      const oauth2 = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'openid email profile',
+        callback: (resp) => {
+          if (resp.error) {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('btn-login').disabled = false;
+            document.getElementById('login-erro').style.display = 'block';
+            document.getElementById('login-erro').textContent = '⚠️ Login cancelado ou bloqueado.';
+            return;
+          }
+          // Buscar info do usuário com o token
+          fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${resp.access_token}` }
+          }).then(r => r.json()).then(info => {
+            sessionStorage.setItem('user_nome',   info.name   || info.email);
+            sessionStorage.setItem('user_avatar', info.picture|| '');
+            sessionStorage.setItem('auth_ok',     '1');
+            entrar(info.name || info.email, info.picture || '');
+          }).catch(() => {
+            sessionStorage.setItem('user_nome',  'Usuário');
+            sessionStorage.setItem('auth_ok',    '1');
+            entrar('Usuário', '');
+          });
+        }
+      });
+      oauth2.requestAccessToken({ prompt: 'select_account' });
+    }
+  });
+}
 function onGoogleSignIn(response) {
   document.getElementById('spinner').style.display = 'block';
   document.getElementById('login-erro').style.display = 'none';
 
   try {
-    // Decodificar o JWT do Google (payload base64)
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    const email   = payload.email;
-    const nome    = payload.name;
-    const avatar  = payload.picture;
+    // Decodificar JWT — padding seguro
+    const base64 = response.credential.split('.')[1]
+      .replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(decodeURIComponent(
+      atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join('')
+    ));
 
-    // Salvar sessão no sessionStorage
-    sessionStorage.setItem('user_email', email);
-    sessionStorage.setItem('user_nome',  nome);
-    sessionStorage.setItem('user_avatar',avatar);
-    sessionStorage.setItem('user_token', response.credential);
+    sessionStorage.setItem('user_email', payload.email  || '');
+    sessionStorage.setItem('user_nome',  payload.name   || payload.email || 'Usuário');
+    sessionStorage.setItem('user_avatar',payload.picture|| '');
+    sessionStorage.setItem('auth_ok',    '1');
 
-    // Mostrar app
-    entrar(nome, avatar);
+    entrar(payload.name || payload.email, payload.picture || '');
 
   } catch(e) {
+    console.error('OAuth error:', e);
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('login-erro').style.display = 'block';
+    document.getElementById('login-erro').textContent =
+      '⚠️ Erro ao processar login. Tente novamente.';
   }
 }
 
 function entrar(nome, avatar) {
   document.getElementById('tela-login').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('user-nome').textContent = nome;
+  document.getElementById('user-nome').textContent = nome || '';
   if (avatar) {
     const img = document.getElementById('user-avatar');
-    img.src = avatar;
-    img.style.display = 'block';
+    img.src = avatar; img.style.display = 'block';
   }
   carregarDados();
 }
 
 function sair() {
   sessionStorage.clear();
-  // Revogar token Google
-  google.accounts.id.disableAutoSelect();
+  try { google.accounts.id.disableAutoSelect(); } catch(e) {}
   document.getElementById('app').style.display = 'none';
   document.getElementById('tela-login').style.display = 'flex';
   document.getElementById('login-erro').style.display = 'none';
@@ -561,9 +617,10 @@ function sair() {
 
 // Verificar sessão existente ao carregar
 window.addEventListener('DOMContentLoaded', () => {
-  const nome   = sessionStorage.getItem('user_nome');
-  const avatar = sessionStorage.getItem('user_avatar');
-  if (nome) {
+  const ok    = sessionStorage.getItem('auth_ok');
+  const nome  = sessionStorage.getItem('user_nome');
+  const avatar= sessionStorage.getItem('user_avatar');
+  if (ok === '1' && nome) {
     entrar(nome, avatar);
   }
 });
@@ -574,56 +631,249 @@ window.addEventListener('DOMContentLoaded', () => {
 // Chave: "ELEMENTO/FASE"
 // ══════════════════════════════════════════════════════
 const PESOS_FASE = {
-  "E1/Estacas":0.00732367084914121,"E1/Blocos":0.00108273238791161,"E1/Encontro":0.00137672294896743,
-  "P1/Estacas":0.0123543245584901,"P1/Blocos":0.00108273238791161,"P1/Pilares":0.000520656477725354,"P1/Travessa":0.00338880714675738,
-  "P2/Estacas":0.0130051183206047,"P2/Blocos":0.00108273238791161,"P2/Pilares":0.00108994105109242,"P2/Travessa":0.00345892353489481,
-  "P3/Estacas":0.0131772290676103,"P3/Blocos":0.00108273238791161,"P3/Pilares":0.00146577354609187,"P3/Travessa":0.00345892353489481,
-  "P4/Estacas":0.0207070742491018,"P4/Blocos":0.00108273238791161,"P4/Pilares":0.00149107027912198,"P4/Travessa":0.00345892353489481,
-  "P5/Estacas":0.0207070742491018,"P5/Blocos":0.00108273238791161,"P5/Pilares":0.00152036550271798,"P5/Travessa":0.00345892353489481,
-  "P6/Estacas":0.0217827664178863,"P6/Blocos":0.00108273238791161,"P6/Pilares":0.0015453766292791,"P6/Travessa":0.00345892353489481,
-  "P7/Estacas":0.0180178438271406,"P7/Blocos":0.00108273238791161,"P7/Pilares":0.00157139628961295,"P7/Travessa":0.00345892353489481,
-  "P8/Estacas":0.0185556899115328,"P8/Blocos":0.00108273238791161,"P8/Pilares":0.00159997749703646,"P8/Travessa":0.00345892353489481,
-  "P9/Estacas":0.0196313820803173,"P9/Blocos":0.00108273238791161,"P9/Pilares":0.00162584544300456,"P9/Travessa":0.00345892353489481,
-  "P10/Estacas":0.0212449203334941,"P10/Blocos":0.00108273238791161,"P10/Pilares":0.00165442665042808,"P10/Travessa":0.00345892353489481,
-  "P11/Estacas":0.0212449203334941,"P11/Blocos":0.00108273238791161,"P11/Pilares":0.00168001790105844,"P11/Travessa":0.00345892353489481,
-  "P12/Estacas":0.0223206125022786,"P12/Blocos":0.00108273238791161,"P12/Pilares":0.00170531463408855,"P12/Travessa":0.00345892353489481,
-  "P13/Estacas":0.0223206125022786,"P13/Blocos":0.00108273238791161,"P13/Pilares":0.00173460985768455,"P13/Travessa":0.00345892353489481,
-  "P14/Estacas":0.0217827664178863,"P14/Blocos":0.00108273238791161,"P14/Pilares":0.00175962098424567,"P14/Travessa":0.00345892353489481,
-  "P15/Estacas":0.0212449203334941,"P15/Blocos":0.00108273238791161,"P15/Pilares":0.00178777378196569,"P15/Travessa":0.00345892353489481,
-  "P16/Estacas":0.0217827664178863,"P16/Blocos":0.00108273238791161,"P16/Pilares":0.00181650670375496,"P16/Travessa":0.00345892353489481,
-  "P17/Estacas":0.0196313820803173,"P17/Blocos":0.00108273238791161,"P17/Pilares":0.00184166063355058,"P17/Travessa":0.00345892353489481,
-  "P18/Estacas":0.0180178438271406,"P18/Blocos":0.00108273238791161,"P18/Pilares":0.0018668145633462,"P18/Travessa":0.00345892353489481,
-  "P19/Estacas":0.0174799977427483,"P19/Blocos":0.00108273238791161,"P19/Pilares":0.00189553857400421,"P19/Travessa":0.00345892353489481,
-  "P20/Estacas":0.014790767320787,"P20/Blocos":0.00108273238791161,"P20/Pilares":0.00201552276263628,"P20/Travessa":0.00345892353489481,
-  "P21/Estacas":0.0110258447300412,"P21/Blocos":0.00108273238791161,"P21/Pilares":0.00197953809626123,"P21/Travessa":0.00347877318448972,
-  "P22/Estacas":0.011251740085486,"P22/Blocos":0.00108273238791161,"P22/Pilares":0.00139522291570088,"P22/Travessa":0.00346549248368161,
-  "P23/Estacas":0.0116551246487802,"P23/Blocos":0.00108273238791161,"P23/Pilares":0.00057639678701978,"P23/Travessa":0.00336895749716246,
-  "E2/Estacas":0.00813043997572959,"E2/Blocos":0.00108273238791161,"E2/Encontro":0.00137672294896743,
-  "E1-P1/Fab. Vigas Protendidas":0.00422915455582982,"E1-P1/Fab. Pré-lajes PL1":0.000770703189621514,"E1-P1/Fab. Pré-lajes PL2":0.000308281275848606,"E1-P1/Lançamento de Vigas":0.00426175906713402,"E1-P1/Lançamento de Pré-lajes":0.0000288717347978750,"E1-P1/Laje In Loco":0.00455240039584989,
-  "P1-P2/Fab. Vigas Protendidas":0.00596007532380499,"P1-P2/Fab. Pré-lajes PL1":0.00108961485429249,"P1-P2/Fab. Pré-lajes PL2":0.000435845941716994,"P1-P2/Lançamento de Vigas":0.00602524557767223,"P1-P2/Lançamento de Pré-lajes":0.0000408186595418233,"P1-P2/Laje In Loco":0.00643615228378778,
-  "P2-P3/Fab. Vigas Protendidas":0.00596007532380499,"P2-P3/Fab. Pré-lajes PL1":0.00108961485429249,"P2-P3/Fab. Pré-lajes PL2":0.000435845941716994,"P2-P3/Lançamento de Vigas":0.00602524557767223,"P2-P3/Lançamento de Pré-lajes":0.0000408186595418233,"P2-P3/Laje In Loco":0.00643615228378778,
-  "P3-P4/Fab. Vigas Protendidas":0.00596007532380499,"P3-P4/Fab. Pré-lajes PL1":0.00108961485429249,"P3-P4/Fab. Pré-lajes PL2":0.000435845941716994,"P3-P4/Lançamento de Vigas":0.00602524557767223,"P3-P4/Lançamento de Pré-lajes":0.0000408186595418233,"P3-P4/Laje In Loco":0.00643615228378778,
-  "P4-P5/Fab. Vigas Protendidas":0.00596007532380499,"P4-P5/Fab. Pré-lajes PL1":0.00108961485429249,"P4-P5/Fab. Pré-lajes PL2":0.000435845941716994,"P4-P5/Lançamento de Vigas":0.00602524557767223,"P4-P5/Lançamento de Pré-lajes":0.0000408186595418233,"P4-P5/Laje In Loco":0.00643615228378778,
-  "P5-P6/Fab. Vigas Protendidas":0.00596007532380499,"P5-P6/Fab. Pré-lajes PL1":0.00108961485429249,"P5-P6/Fab. Pré-lajes PL2":0.000435845941716994,"P5-P6/Lançamento de Vigas":0.00602524557767223,"P5-P6/Lançamento de Pré-lajes":0.0000408186595418233,"P5-P6/Laje In Loco":0.00643615228378778,
-  "P6-P7/Fab. Vigas Protendidas":0.00596007532380499,"P6-P7/Fab. Pré-lajes PL1":0.00108961485429249,"P6-P7/Fab. Pré-lajes PL2":0.000435845941716994,"P6-P7/Lançamento de Vigas":0.00602524557767223,"P6-P7/Lançamento de Pré-lajes":0.0000408186595418233,"P6-P7/Laje In Loco":0.00643615228378778,
-  "P7-P8/Fab. Vigas Protendidas":0.00596007532380499,"P7-P8/Fab. Pré-lajes PL1":0.00108961485429249,"P7-P8/Fab. Pré-lajes PL2":0.000435845941716994,"P7-P8/Lançamento de Vigas":0.00602524557767223,"P7-P8/Lançamento de Pré-lajes":0.0000408186595418233,"P7-P8/Laje In Loco":0.00643615228378778,
-  "P8-P9/Fab. Vigas Protendidas":0.00596007532380499,"P8-P9/Fab. Pré-lajes PL1":0.00108961485429249,"P8-P9/Fab. Pré-lajes PL2":0.000435845941716994,"P8-P9/Lançamento de Vigas":0.00602524557767223,"P8-P9/Lançamento de Pré-lajes":0.0000408186595418233,"P8-P9/Laje In Loco":0.00643615228378778,
-  "P9-P10/Fab. Vigas Protendidas":0.00596007532380499,"P9-P10/Fab. Pré-lajes PL1":0.00108961485429249,"P9-P10/Fab. Pré-lajes PL2":0.000435845941716994,"P9-P10/Lançamento de Vigas":0.00602524557767223,"P9-P10/Lançamento de Pré-lajes":0.0000408186595418233,"P9-P10/Laje In Loco":0.00643615228378778,
-  "P10-P11/Fab. Vigas Protendidas":0.00596007532380499,"P10-P11/Fab. Pré-lajes PL1":0.00108961485429249,"P10-P11/Fab. Pré-lajes PL2":0.000435845941716994,"P10-P11/Lançamento de Vigas":0.00602524557767223,"P10-P11/Lançamento de Pré-lajes":0.0000408186595418233,"P10-P11/Laje In Loco":0.00643615228378778,
-  "P11-P12/Fab. Vigas Protendidas":0.00596007532380499,"P11-P12/Fab. Pré-lajes PL1":0.00108961485429249,"P11-P12/Fab. Pré-lajes PL2":0.000435845941716994,"P11-P12/Lançamento de Vigas":0.00602524557767223,"P11-P12/Lançamento de Pré-lajes":0.0000408186595418233,"P11-P12/Laje In Loco":0.00643615228378778,
-  "P12-P13/Fab. Vigas Protendidas":0.00596007532380499,"P12-P13/Fab. Pré-lajes PL1":0.00108961485429249,"P12-P13/Fab. Pré-lajes PL2":0.000435845941716994,"P12-P13/Lançamento de Vigas":0.00602524557767223,"P12-P13/Lançamento de Pré-lajes":0.0000408186595418233,"P12-P13/Laje In Loco":0.00643615228378778,
-  "P13-P14/Fab. Vigas Protendidas":0.00596007532380499,"P13-P14/Fab. Pré-lajes PL1":0.00108961485429249,"P13-P14/Fab. Pré-lajes PL2":0.000435845941716994,"P13-P14/Lançamento de Vigas":0.00602524557767223,"P13-P14/Lançamento de Pré-lajes":0.0000408186595418233,"P13-P14/Laje In Loco":0.00643615228378778,
-  "P14-P15/Fab. Vigas Protendidas":0.00596007532380499,"P14-P15/Fab. Pré-lajes PL1":0.00108961485429249,"P14-P15/Fab. Pré-lajes PL2":0.000435845941716994,"P14-P15/Lançamento de Vigas":0.00602524557767223,"P14-P15/Lançamento de Pré-lajes":0.0000408186595418233,"P14-P15/Laje In Loco":0.00643615228378778,
-  "P15-P16/Fab. Vigas Protendidas":0.00596007532380499,"P15-P16/Fab. Pré-lajes PL1":0.00108961485429249,"P15-P16/Fab. Pré-lajes PL2":0.000435845941716994,"P15-P16/Lançamento de Vigas":0.00602524557767223,"P15-P16/Lançamento de Pré-lajes":0.0000408186595418233,"P15-P16/Laje In Loco":0.00643615228378778,
-  "P16-P17/Fab. Vigas Protendidas":0.00596007532380499,"P16-P17/Fab. Pré-lajes PL1":0.00108961485429249,"P16-P17/Fab. Pré-lajes PL2":0.000435845941716994,"P16-P17/Lançamento de Vigas":0.00602524557767223,"P16-P17/Lançamento de Pré-lajes":0.0000408186595418233,"P16-P17/Laje In Loco":0.00643615228378778,
-  "P17-P18/Fab. Vigas Protendidas":0.00596007532380499,"P17-P18/Fab. Pré-lajes PL1":0.00108961485429249,"P17-P18/Fab. Pré-lajes PL2":0.000435845941716994,"P17-P18/Lançamento de Vigas":0.00602524557767223,"P17-P18/Lançamento de Pré-lajes":0.0000408186595418233,"P17-P18/Laje In Loco":0.00643615228378778,
-  "P18-P19/Fab. Vigas Protendidas":0.00596007532380499,"P18-P19/Fab. Pré-lajes PL1":0.00108961485429249,"P18-P19/Fab. Pré-lajes PL2":0.000435845941716994,"P18-P19/Lançamento de Vigas":0.00602524557767223,"P18-P19/Lançamento de Pré-lajes":0.0000408186595418233,"P18-P19/Laje In Loco":0.00643615228378778,
-  "P19-P20/Fab. Vigas Protendidas":0.00596007532380499,"P19-P20/Fab. Pré-lajes PL1":0.00108961485429249,"P19-P20/Fab. Pré-lajes PL2":0.000435845941716994,"P19-P20/Lançamento de Vigas":0.00602524557767223,"P19-P20/Lançamento de Pré-lajes":0.0000408186595418233,"P19-P20/Laje In Loco":0.00643615228378778,
-  "P20-P21/Fab. Vigas Protendidas":0.00600320528634954,"P20-P21/Fab. Pré-lajes PL1":0.00108928830643169,"P20-P21/Fab. Pré-lajes PL2":0.000447334397841278,"P20-P21/Lançamento de Vigas":0.00606933274043568,"P20-P21/Lançamento de Pré-lajes":0.0000411173326604220,"P20-P21/Laje In Loco":0.00648324608098622,
-  "P21-P22/Fab. Vigas Protendidas":0.00596007532380499,"P21-P22/Fab. Pré-lajes PL1":0.00109081663538178,"P21-P22/Fab. Pré-lajes PL2":0.000434644160627701,"P21-P22/Lançamento de Vigas":0.00602524557767223,"P21-P22/Lançamento de Pré-lajes":0.0000408186595418233,"P21-P22/Laje In Loco":0.00643615228378778,
-  "P22-P23/Fab. Vigas Protendidas":0.00600320528634954,"P22-P23/Fab. Pré-lajes PL1":0.00109960156819533,"P22-P23/Fab. Pré-lajes PL2":0.000437021136077632,"P22-P23/Lançamento de Vigas":0.00606933274043568,"P22-P23/Lançamento de Pré-lajes":0.0000411173326604220,"P22-P23/Laje In Loco":0.00648324608098622,
-  "P23-E2/Fab. Vigas Protendidas":0.00409888539314698,"P23-E2/Fab. Pré-lajes PL1":0.000746784814771191,"P23-E2/Fab. Pré-lajes PL2":0.000298713925908476,"P23-E2/Lançamento de Vigas":0.00412949757884365,"P23-E2/Lançamento de Pré-lajes":0.0000279757154420789,"P23-E2/Laje In Loco":0.00441111900425455,
-};
+  "E1/Estacas":0.00702540192247391,
+  "E1/Blocos":0.00103863627356368,
+  "E1/Encontro":0.00132065356999542,
+  "P1/Estacas":0.0118511737203838,
+  "P1/Blocos":0.00103863627356368,
+  "P1/Pilares":0.000499451858897935,
+  "P1/Travessa":0.00325079222348099,
+  "P2/Estacas":0.0124754628018667,
+  "P2/Blocos":0.00103863627356368,
+  "P2/Pilares":0.00104555135170033,
+  "P2/Travessa":0.00331805300269465,
+  "P3/Estacas":0.0126405640465565,
+  "P3/Blocos":0.00103863627356368,
+  "P3/Pilares":0.00140607743039582,
+  "P3/Travessa":0.00331805300269465,
+  "P4/Estacas":0.0198637435017316,
+  "P4/Blocos":0.00103863627356368,
+  "P4/Pilares":0.00143034391103413,
+  "P4/Travessa":0.00331805300269465,
+  "P5/Estacas":0.0198637435017316,
+  "P5/Blocos":0.00103863627356368,
+  "P5/Pilares":0.00145844603692292,
+  "P5/Travessa":0.00331805300269465,
+  "P6/Estacas":0.0208956262810423,
+  "P6/Blocos":0.00103863627356368,
+  "P6/Pilares":0.00148243854290048,
+  "P6/Travessa":0.00331805300269465,
+  "P7/Estacas":0.0172840365534548,
+  "P7/Blocos":0.00103863627356368,
+  "P7/Pilares":0.00150739850840098,
+  "P7/Travessa":0.00331805300269465,
+  "P8/Estacas":0.0177999779431102,
+  "P8/Blocos":0.00103863627356368,
+  "P8/Pilares":0.00153481569763789,
+  "P8/Travessa":0.00331805300269465,
+  "P9/Estacas":0.0188318607224209,
+  "P9/Blocos":0.00103863627356368,
+  "P9/Pilares":0.0015596301275977,
+  "P9/Travessa":0.00331805300269465,
+  "P10/Estacas":0.020379684891387,
+  "P10/Blocos":0.00103863627356368,
+  "P10/Pilares":0.00158704731683462,
+  "P10/Travessa":0.00331805300269465,
+  "P11/Estacas":0.020379684891387,
+  "P11/Blocos":0.00103863627356368,
+  "P11/Pilares":0.00161159632034399,
+  "P11/Travessa":0.00331805300269465,
+  "P12/Estacas":0.0214115676706977,
+  "P12/Blocos":0.00103863627356368,
+  "P12/Pilares":0.00163586280098231,
+  "P12/Travessa":0.00331805300269465,
+  "P13/Estacas":0.0214115676706977,
+  "P13/Blocos":0.00103863627356368,
+  "P13/Pilares":0.0016639649268711,
+  "P13/Travessa":0.00331805300269465,
+  "P14/Estacas":0.0208956262810423,
+  "P14/Blocos":0.00103863627356368,
+  "P14/Pilares":0.00168795743284866,
+  "P14/Travessa":0.00331805300269465,
+  "P15/Estacas":0.020379684891387,
+  "P15/Blocos":0.00103863627356368,
+  "P15/Pilares":0.00171496366009445,
+  "P15/Travessa":0.00331805300269465,
+  "P16/Estacas":0.0208956262810423,
+  "P16/Blocos":0.00103863627356368,
+  "P16/Pilares":0.00174252638487205,
+  "P16/Travessa":0.00331805300269465,
+  "P17/Estacas":0.0188318607224209,
+  "P17/Blocos":0.00103863627356368,
+  "P17/Pilares":0.00176665587817999,
+  "P17/Travessa":0.00331805300269465,
+  "P18/Estacas":0.0172840365534548,
+  "P18/Blocos":0.00103863627356368,
+  "P18/Pilares":0.00179078537148793,
+  "P18/Travessa":0.00331805300269465,
+  "P19/Estacas":0.0167680951637994,
+  "P19/Blocos":0.00103863627356368,
+  "P19/Pilares":0.00181833954805522,
+  "P19/Travessa":0.00331805300269465,
+  "P20/Estacas":0.0141883882155226,
+  "P20/Blocos":0.00103863627356368,
+  "P20/Pilares":0.00193343717694184,
+  "P20/Travessa":0.00331805300269465,
+  "P21/Estacas":0.010576798487935,
+  "P21/Blocos":0.00103863627356368,
+  "P21/Pilares":0.00189891804718596,
+  "P21/Travessa":0.00333709424161664,
+  "P22/Estacas":0.0107934938715903,
+  "P22/Blocos":0.00103863627356368,
+  "P22/Pilares":0.00133840009418146,
+  "P22/Travessa":0.00332435441989185,
+  "P23/Estacas":0.0111804499138318,
+  "P23/Blocos":0.00103863627356368,
+  "P23/Pilares":0.000552922049481701,
+  "P23/Travessa":0.00323175098455899,
+  "E2/Estacas":0.00779931400695696,
+  "E2/Blocos":0.00103863627356368,
+  "E2/Encontro":0.00132065356999542,
+  "E1-P1/Fab. Vigas Protendidas":0.00405691505789752,
+  "E1-P1/Fab. Pré-lajes PL1":0.000739314994018154,
+  "E1-P1/Fab. Pré-lajes PL2":0.000295725997607262,
+  "E1-P1/Lançamento de Vigas":0.00408819169513535,
+  "E1-P1/Lançamento de Pré-lajes":2.76958843908083e-05,
+  "E1-P1/Laje In Loco":0.00436699616239924,
+  "P1-P2/Fab. Vigas Protendidas":0.00571734113949959,
+  "P1-P2/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P1-P2/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P1-P2/Lançamento de Vigas":0.00577985722415687,
+  "P1-P2/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P1-P2/Laje In Loco":0.00617402905718513,
+  "P2-P3/Fab. Vigas Protendidas":0.00571734113949959,
+  "P2-P3/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P2-P3/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P2-P3/Lançamento de Vigas":0.00577985722415687,
+  "P2-P3/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P2-P3/Laje In Loco":0.00617402905718513,
+  "P3-P4/Fab. Vigas Protendidas":0.00571734113949959,
+  "P3-P4/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P3-P4/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P3-P4/Lançamento de Vigas":0.00577985722415687,
+  "P3-P4/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P3-P4/Laje In Loco":0.00617402905718513,
+  "P4-P5/Fab. Vigas Protendidas":0.00571734113949959,
+  "P4-P5/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P4-P5/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P4-P5/Lançamento de Vigas":0.00577985722415687,
+  "P4-P5/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P4-P5/Laje In Loco":0.00617402905718513,
+  "P5-P6/Fab. Vigas Protendidas":0.00571734113949959,
+  "P5-P6/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P5-P6/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P5-P6/Lançamento de Vigas":0.00577985722415687,
+  "P5-P6/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P5-P6/Laje In Loco":0.00617402905718513,
+  "P6-P7/Fab. Vigas Protendidas":0.00571734113949959,
+  "P6-P7/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P6-P7/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P6-P7/Lançamento de Vigas":0.00577985722415687,
+  "P6-P7/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P6-P7/Laje In Loco":0.00617402905718513,
+  "P7-P8/Fab. Vigas Protendidas":0.00571734113949959,
+  "P7-P8/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P7-P8/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P7-P8/Lançamento de Vigas":0.00577985722415687,
+  "P7-P8/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P7-P8/Laje In Loco":0.00617402905718513,
+  "P8-P9/Fab. Vigas Protendidas":0.00571734113949959,
+  "P8-P9/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P8-P9/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P8-P9/Lançamento de Vigas":0.00577985722415687,
+  "P8-P9/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P8-P9/Laje In Loco":0.00617402905718513,
+  "P9-P10/Fab. Vigas Protendidas":0.00571734113949959,
+  "P9-P10/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P9-P10/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P9-P10/Lançamento de Vigas":0.00577985722415687,
+  "P9-P10/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P9-P10/Laje In Loco":0.00617402905718513,
+  "P10-P11/Fab. Vigas Protendidas":0.00571734113949959,
+  "P10-P11/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P10-P11/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P10-P11/Lançamento de Vigas":0.00577985722415687,
+  "P10-P11/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P10-P11/Laje In Loco":0.00617402905718513,
+  "P11-P12/Fab. Vigas Protendidas":0.00571734113949959,
+  "P11-P12/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P11-P12/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P11-P12/Lançamento de Vigas":0.00577985722415687,
+  "P11-P12/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P11-P12/Laje In Loco":0.00617402905718513,
+  "P12-P13/Fab. Vigas Protendidas":0.00571734113949959,
+  "P12-P13/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P12-P13/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P12-P13/Lançamento de Vigas":0.00577985722415687,
+  "P12-P13/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P12-P13/Laje In Loco":0.00617402905718513,
+  "P13-P14/Fab. Vigas Protendidas":0.00571734113949959,
+  "P13-P14/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P13-P14/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P13-P14/Lançamento de Vigas":0.00577985722415687,
+  "P13-P14/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P13-P14/Laje In Loco":0.00617402905718513,
+  "P14-P15/Fab. Vigas Protendidas":0.00571734113949959,
+  "P14-P15/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P14-P15/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P14-P15/Lançamento de Vigas":0.00577985722415687,
+  "P14-P15/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P14-P15/Laje In Loco":0.00617402905718513,
+  "P15-P16/Fab. Vigas Protendidas":0.00571734113949959,
+  "P15-P16/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P15-P16/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P15-P16/Lançamento de Vigas":0.00577985722415687,
+  "P15-P16/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P15-P16/Laje In Loco":0.00617402905718513,
+  "P16-P17/Fab. Vigas Protendidas":0.00571734113949959,
+  "P16-P17/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P16-P17/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P16-P17/Lançamento de Vigas":0.00577985722415687,
+  "P16-P17/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P16-P17/Laje In Loco":0.00617402905718513,
+  "P17-P18/Fab. Vigas Protendidas":0.00571734113949959,
+  "P17-P18/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P17-P18/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P17-P18/Lançamento de Vigas":0.00577985722415687,
+  "P17-P18/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P17-P18/Laje In Loco":0.00617402905718513,
+  "P18-P19/Fab. Vigas Protendidas":0.00571734113949959,
+  "P18-P19/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P18-P19/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P18-P19/Lançamento de Vigas":0.00577985722415687,
+  "P18-P19/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P18-P19/Laje In Loco":0.00617402905718513,
+  "P19-P20/Fab. Vigas Protendidas":0.00571734113949959,
+  "P19-P20/Fab. Pré-lajes PL1":0.00104523843981877,
+  "P19-P20/Fab. Pré-lajes PL2":0.000418095375927507,
+  "P19-P20/Lançamento de Vigas":0.00577985722415687,
+  "P19-P20/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P19-P20/Laje In Loco":0.00617402905718513,
+  "P20-P21/Fab. Vigas Protendidas":0.0057587145611099,
+  "P20-P21/Fab. Pré-lajes PL1":0.00104492519117389,
+  "P20-P21/Fab. Pré-lajes PL2":0.000429115945175409,
+  "P20-P21/Lançamento de Vigas":0.00582214886238241,
+  "P20-P21/Lançamento de Pré-lajes":3.9442759494496e-05,
+  "P20-P21/Laje In Loco":0.00621920487955477,
+  "P21-P22/Fab. Vigas Protendidas":0.00571734113949959,
+  "P21-P22/Fab. Pré-lajes PL1":0.00104639127633328,
+  "P21-P22/Fab. Pré-lajes PL2":0.000416942539413002,
+  "P21-P22/Lançamento de Vigas":0.00577985722415687,
+  "P21-P22/Lançamento de Pré-lajes":3.91562503456256e-05,
+  "P21-P22/Laje In Loco":0.00617402905718513,
+  "P22-P23/Fab. Vigas Protendidas":0.0057587145611099,
+  "P22-P23/Fab. Pré-lajes PL1":0.00105481842784629,
+  "P22-P23/Fab. Pré-lajes PL2":0.000419222708503012,
+  "P22-P23/Lançamento de Vigas":0.00582214886238241,
+  "P22-P23/Lançamento de Pré-lajes":3.9442759494496e-05,
+  "P22-P23/Laje In Loco":0.00621920487955477,
+  "P23-E2/Fab. Vigas Protendidas":0.00393195132798626,
+  "P23-E2/Fab. Pré-lajes PL1":0.000716370735583107,
+  "P23-E2/Fab. Pré-lajes PL2":0.000286548294233243,
+  "P23-E2/Lançamento de Vigas":0.00396131678045873,
+  "P23-E2/Lançamento de Pré-lajes":2.68363569441971e-05,
+  "P23-E2/Laje In Loco":0.00423146869529029,
+};};
 
 // ══════════════════════════════════════════════════════
 // CARREGAR E PARSEAR CSV DO GOOGLE SHEETS
@@ -635,12 +885,30 @@ async function carregarDados() {
     const resp = await fetch(CSV_URL + '&cachebust=' + Date.now());
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const csv = await resp.text();
+    if (!csv || csv.trim().length < 10) throw new Error('CSV vazio');
     parsearCSV(csv);
     const agora = new Date().toLocaleString('pt-BR');
     setStatus('ok', `Dados atualizados em ${agora}`);
   } catch(e) {
-    setStatus('err', `Erro ao carregar dados: ${e.message}. Verifique se a planilha está publicada.`);
-    // Mostrar dados zerados mas funcionais
+    console.error('[CSV] Erro:', e.message);
+    setStatus('err', `Erro ao carregar dados: ${e.message}`);
+    // Inicializar estrutura zerada — NÃO volta ao login
+    const ordemApoios = ['E1','P1','P2','P3','P4','P5','P6','P7','P8','P9','P10','P11',
+                         'P12','P13','P14','P15','P16','P17','P18','P19','P20','P21',
+                         'P22','P23','E2'];
+    DADOS_APOIOS = ordemApoios.map(id => {
+      const isE = ['E1','E2'].includes(id);
+      const fases = isE
+        ? [['Estacas',5],['Blocos',1],['Encontro',1]]
+        : [['Estacas',6],['Blocos',1],['Pilares',3],['Travessa',1]];
+      return {
+        id, tipo: isE ? 'Encontro' : 'Pilar',
+        fases: fases.map(([n,p]) => ({n, p, r:0, w:PESOS_FASE[`${id}/${n}`]||0, contrib:0})),
+        pesoTotal: fases.reduce((s,[n]) => s+(PESOS_FASE[`${id}/${n}`]||0), 0),
+        info: isE ? '5 estacas D=1,20m' : '6 estacas D=1,50m | 3 pilares'
+      };
+    });
+    DADOS_VAOS = [];
     renderizarTudo();
   }
 }
