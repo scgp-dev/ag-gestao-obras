@@ -708,9 +708,11 @@ function parsearCSV(csv) {
     const previsto  = parseNum(r[7]);
     const realizado = parseNum(r[8]);
 
-    // PESO: usar sempre o valor hardcoded — não depender do CSV (escala problemática)
-    const chave = `${elemento}/${fase}`;
-    const peso  = PESOS_FASE[chave] || 0;
+    // PESO: preferir valor do CSV (col 10); fallback para dicionário hardcoded
+    const chave  = `${elemento}/${fase}`;
+    let pesoCsv  = r.length > 10 ? parseNum(r[10]) : 0;
+    if (pesoCsv > 0.1) pesoCsv /= 100; // normaliza se vier em escala percentual
+    const peso   = pesoCsv > 0 ? pesoCsv : (PESOS_FASE[chave] || 0);
 
     // CONTRIB: calcular no cliente com peso correto
     const pct_fase = previsto > 0 ? realizado / previsto : 0;
