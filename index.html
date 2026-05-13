@@ -997,10 +997,28 @@ function gerarMapa() {
     '41,0m','41,0m','41,0m','41,0m','41,0m','41,0m','41,0m','41,0m','41,0m','41,0m',
     '41,0m','41,3m','41,0m','41,3m','28,1m'];
 
+  // helper: progresso de uma fase específica de um apoio (0=n, 0<av<1=a, 1=c)
+  function stFase(apd, nome) {
+    if (!apd) return 'n';
+    const f = apd.fases.find(f => f.n.toLowerCase().includes(nome.toLowerCase()));
+    if (!f || f.p <= 0) return 'n';
+    const av = Math.min(f.r / f.p, 1);
+    return av <= 0 ? 'n' : av >= 0.999 ? 'c' : 'a';
+  }
+
+  // helper: progresso de uma fase de um vão
+  function stFaseVao(vaoId, nome) {
+    const vao = DADOS_VAOS.find(v => v.id === vaoId);
+    if (!vao) return 'n';
+    const f = vao.fases.find(f => f.n.toLowerCase().includes(nome.toLowerCase()));
+    if (!f || f.p <= 0) return 'n';
+    const av = Math.min(f.r / f.p, 1);
+    return av <= 0 ? 'n' : av >= 0.999 ? 'c' : 'a';
+  }
+
   const AP = ORDEM.map(id => {
     const apd = DADOS_APOIOS.find(a => a.id === id);
-    return { id, m: METROS[id], e: (id==='E1'||id==='E2') ? 'enc' : 'pil',
-             s: apd ? stApoio(apd) : 'n', apd };
+    return { id, m: METROS[id], e: (id==='E1'||id==='E2') ? 'enc' : 'pil', apd };
   });
   const SPANS = AP.slice(0,-1).map((_,i)=>({i,j:i+1}));
 
@@ -1048,32 +1066,41 @@ function gerarMapa() {
       'font-family':'Arial,sans-serif','font-size':'5.5',fill:'#334155',opacity:'.75'}));
   });
 
-  // ── tabuleiro ────────────────────────────────────────────
+  // ── tabuleiro — cor por "Lançamento de Vigas" por vão ────
   SPANS.forEach(sp=>{
-    const x1=Xp(AP[sp.i]),x2=Xp(AP[sp.j]);
-    bg.appendChild(Rc(x1,YDT,x2-x1,3,{fill:'#475569',opacity:'.18',stroke:'none'}));
-    bg.appendChild(Rc(x1,YDB-3,x2-x1,3,{fill:'#475569',opacity:'.18',stroke:'none'}));
+    const x1=Xp(AP[sp.i]), x2=Xp(AP[sp.j]);
+    const vaoId=`${AP[sp.i].id}-${AP[sp.j].id}`;
+    const s=stFaseVao(vaoId,'Lançamento de Vigas');
+    const op=(OPC(s)*.45).toFixed(2);
+    bg.appendChild(Rc(x1,YDT,   x2-x1,3, {fill:COR(s),opacity:op,stroke:'none'}));
+    bg.appendChild(Rc(x1,YDB-3, x2-x1,3, {fill:COR(s),opacity:op,stroke:'none'}));
   });
   bg.appendChild(Ln(xE1,YDT,xE2,YDT,{stroke:'#1e293b','stroke-width':'2.5',opacity:'.88'}));
   bg.appendChild(Ln(xE1,YDB,xE2,YDB,{stroke:'#1e293b','stroke-width':'2.5',opacity:'.88'}));
 
-  // ── apoios + rótulos ──────────────────────────────────────
+  // ── apoios + rótulos — cor por fase individual ────────────
   AP.forEach(ap=>{
-    const x=Xp(ap), c=COR(ap.s), op=OPC(ap.s), isE=ap.e==='enc';
+    const x=Xp(ap), isE=ap.e==='enc', apd=ap.apd;
     const g=el('g',{class:'apoio-grupo'});
-    g.style.cursor = ap.apd ? 'pointer' : 'default';
+    g.style.cursor = apd ? 'pointer' : 'default';
 
     if(isE){
-      g.appendChild(Rc(x-10,YDB,20,YTB-YDB,{fill:c,opacity:op,rx:'1'}));
+      const cEnc=COR(stFase(apd,'Encontro')), opEnc=OPC(stFase(apd,'Encontro'));
+      const cEst=COR(stFase(apd,'Estacas')),  opEst=OPC(stFase(apd,'Estacas'));
+      g.appendChild(Rc(x-10,YDB,20,YTB-YDB,{fill:cEnc,opacity:opEnc,rx:'1'}));
       for(const off of [-4.5,+1.5])
-        g.appendChild(Rc(x+off,YTB,3.5,YEST-YTB,{fill:c,opacity:op,rx:'1'}));
+        g.appendChild(Rc(x+off,YTB,3.5,YEST-YTB,{fill:cEst,opacity:opEst,rx:'1'}));
     } else {
-      g.appendChild(Rc(x-10,YDB,20,YTB-YDB,{fill:c,opacity:op,rx:'1'}));
+      const cTrav=COR(stFase(apd,'Travessa')), opTrav=OPC(stFase(apd,'Travessa'));
+      const cPil =COR(stFase(apd,'Pilares')),  opPil =OPC(stFase(apd,'Pilares'));
+      const cBloc=COR(stFase(apd,'Blocos')),   opBloc=OPC(stFase(apd,'Blocos'));
+      const cEst =COR(stFase(apd,'Estacas')),  opEst =OPC(stFase(apd,'Estacas'));
+      g.appendChild(Rc(x-10,YDB, 20,YTB-YDB,  {fill:cTrav,opacity:opTrav,rx:'1'}));
       for(const off of [-4.5,+1.5])
-        g.appendChild(Rc(x+off,YTB,3.5,YPIB-YTB,{fill:c,opacity:op}));
-      g.appendChild(Rc(x-11,YPIB,22,YBKB-YPIB,{fill:c,opacity:op,rx:'1.5'}));
+        g.appendChild(Rc(x+off,YTB,3.5,YPIB-YTB,{fill:cPil,opacity:opPil}));
+      g.appendChild(Rc(x-11,YPIB,22,YBKB-YPIB, {fill:cBloc,opacity:opBloc,rx:'1.5'}));
       for(const off of [-4.5,+1.5])
-        g.appendChild(Rc(x+off,YBKB,3.5,YEST-YBKB,{fill:c,opacity:op,rx:'1'}));
+        g.appendChild(Rc(x+off,YBKB,3.5,YEST-YBKB,{fill:cEst,opacity:opEst,rx:'1'}));
     }
 
     // rótulo
