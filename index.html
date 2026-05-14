@@ -1073,6 +1073,16 @@ function gerarMapa() {
     }
     container.appendChild(g);
   });
+
+  // ── legendas de sentido (E1 = Graúna, E2 = Gaivotas) ────
+  const e1x = Xp(AP[0]), e2x = Xp(AP[AP.length-1]);
+  for(const [x, txt] of [[e1x,'Graúna'],[e2x,'Gaivotas']]){
+    const t = el('text',{x, y:139, 'text-anchor':'middle',
+      'font-family':'Arial,sans-serif','font-size':'7.5','font-weight':'700',
+      fill:'#28156E', opacity:'.7', 'letter-spacing':'0.5'});
+    t.textContent = txt;
+    bg.appendChild(t);
+  }
 }
 
 // ── LISTA E DETALHE ──
