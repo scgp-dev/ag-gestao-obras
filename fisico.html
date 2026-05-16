@@ -464,6 +464,11 @@
 // ══════════════════════════════════════════════════════
 const CLIENT_ID = '167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com';
 const CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRtcGH2JufPDsSZTl8w9IDpKeSk2dxKO2PJLIriNrS3y6QqaSkLRt7UgfzLRni2mQ/pub?gid=640700570&single=true&output=csv'
+const WHITELIST = [
+  'jailtonsantos@construtoraagaspar.com.br',
+  'marcofrensel@construtoraagaspar.com.br',
+  'rodrigo.asfora@construtoraagaspar.com.br',
+];
 
 // ══════════════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -480,19 +485,21 @@ function onGoogleSignIn(response) {
   document.getElementById('login-erro').style.display = 'none';
 
   try {
-    // Decodificar o JWT do Google (payload base64)
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
     const email   = payload.email;
     const nome    = payload.name;
     const avatar  = payload.picture;
 
-    // Salvar sessão no sessionStorage
+    if (!WHITELIST.includes(email.toLowerCase())) {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('login-erro').style.display = 'block';
+      return;
+    }
+
     sessionStorage.setItem('user_email', email);
     sessionStorage.setItem('user_nome',  nome);
     sessionStorage.setItem('user_avatar',avatar);
     sessionStorage.setItem('user_token', response.credential);
-
-    // Mostrar app
     entrar(nome, avatar);
 
   } catch(e) {
