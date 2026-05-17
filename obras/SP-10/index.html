@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PMO — Ponte Graúna-Gaivotas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --g-esc:#1A0D4A;--g-pri:#28156E;--g-med:#3D2490;--g-clr:#EAE7F5;--g-brd:#C5BDE8;
+  --branco:#FFFFFF;--cinza:#64748B;--borda:#E2E8F0;
+  --sombra:0 4px 24px rgba(40,21,110,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--g-esc);
+  min-height:100vh;
+}
+
+/* ── TELA DE LOGIN ── */
+#tela-login{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:32px 16px;
+}
+.login-card{
+  background:var(--branco);border-radius:16px;
+  padding:48px 52px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+  max-width:420px;width:100%;
+}
+.login-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--g-clr);border-radius:10px;
+  padding:12px 22px;margin-bottom:24px;
+}
+.login-badge span{
+  font-size:12px;font-weight:700;color:var(--g-pri);letter-spacing:.5px;
+}
+.login-sep{color:var(--g-brd);}
+.login-titulo{
+  font-size:22px;font-weight:700;color:var(--g-pri);
+  margin-bottom:6px;line-height:1.2;
+}
+.login-sub{
+  font-size:12px;color:var(--cinza);margin-bottom:32px;line-height:1.5;
+}
+.login-aviso{
+  font-size:10px;color:var(--cinza);margin-top:20px;
+  padding-top:16px;border-top:1px solid var(--borda);line-height:1.6;
+}
+.login-erro{
+  display:none;background:#FEF2F2;border:1px solid #FECACA;
+  border-radius:8px;padding:10px 14px;
+  font-size:11px;color:#DC2626;margin-top:16px;
+}
+.l-spinner{
+  display:none;width:32px;height:32px;
+  border:3px solid var(--g-clr);border-top-color:var(--g-pri);
+  border-radius:50%;animation:spin .8s linear infinite;margin:16px auto 0;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── PORTAL (pós-login) ── */
+#app{
+  display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:32px 16px;
+}
+
+.portal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;max-width:700px;margin-bottom:48px;
+}
+.branding{text-align:left;}
+.logo-box{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;padding:10px 20px;margin-bottom:14px;
+}
+.logo-text{
+  font-size:12px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.5px;
+}
+.logo-sep{color:rgba(255,255,255,.3);}
+.main-title{
+  font-size:26px;font-weight:700;color:var(--branco);
+  letter-spacing:.2px;margin-bottom:4px;
+}
+.main-sub{font-size:12px;color:rgba(255,255,255,.4);}
+
+.user-pill{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  border-radius:30px;padding:7px 16px 7px 10px;flex-shrink:0;
+}
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);object-fit:cover;display:none;
+}
+.user-nome{font-size:11px;color:rgba(255,255,255,.7);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-sair{
+  background:none;border:none;color:rgba(255,255,255,.4);
+  font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;
+  padding:0;margin-left:4px;transition:color .15s;
+}
+.btn-sair:hover{color:rgba(255,255,255,.7);}
+
+/* PAINEIS GRID */
+.paineis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;max-width:700px;width:100%;
+}
+.painel-card{
+  background:var(--branco);border-radius:16px;padding:32px 28px;
+  text-decoration:none;display:block;box-shadow:var(--sombra);
+  border:2px solid transparent;
+  transition:transform .18s,border-color .18s,box-shadow .18s;
+  position:relative;overflow:hidden;
+}
+.painel-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:var(--g-pri);transition:height .18s;
+}
+.painel-card:hover{transform:translateY(-4px);border-color:var(--g-brd);box-shadow:0 12px 40px rgba(40,21,110,.22);}
+.painel-card:hover::before{height:6px;}
+.painel-card.financeiro::before{background:#B45309;}
+.painel-card.financeiro:hover{border-color:#FCD34D;}
+
+.card-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:18px;font-size:22px;
+}
+.card-icon.fisico{background:var(--g-clr);}
+.card-icon.financeiro{background:#FEF3C7;}
+.card-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--cinza);margin-bottom:6px;}
+.card-title{font-size:20px;font-weight:700;color:var(--g-pri);margin-bottom:8px;line-height:1.2;}
+.financeiro .card-title{color:#92400E;}
+.card-desc{font-size:12px;color:var(--cinza);line-height:1.6;margin-bottom:20px;}
+.card-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;color:var(--g-pri);
+  padding:7px 16px;border-radius:20px;background:var(--g-clr);transition:background .15s;
+}
+.financeiro .card-cta{color:#92400E;background:#FEF3C7;}
+.painel-card:hover .card-cta{background:var(--g-brd);}
+.financeiro:hover .card-cta{background:#FCD34D;}
+
+.portal-footer{
+  margin-top:36px;text-align:center;
+  font-size:10px;color:rgba(255,255,255,.2);line-height:1.8;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TELA DE LOGIN ══ -->
+<div id="tela-login">
+  <div class="login-card">
+    <div class="login-badge">
+      <span>A.GASPAR</span>
+      <span class="login-sep">·</span>
+      <span>SIURB / PMSP</span>
+    </div>
+    <div class="login-titulo">Ponte Graúna-Gaivotas</div>
+    <div class="login-sub">Central de Painéis — PMO<br>Contrato 029/SIURB/2025 — Acesso restrito</div>
+
+    <div id="g_id_onload"
+         data-client_id="167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com"
+         data-callback="onGoogleSignIn"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="signin_with"
+         data-shape="rectangular"
+         data-logo_alignment="left"
+         data-width="280">
+    </div>
+
+    <div class="l-spinner" id="l-spinner"></div>
+    <div class="login-erro" id="login-erro">
+      Acesso não autorizado. Entre em contato com o administrador do sistema.
+    </div>
+    <div class="login-aviso">
+      Acesso restrito a usuários autorizados.<br>
+      Construtora A. Gaspar S.A. · SIURB/PMSP · Fiscalização
+    </div>
+  </div>
+</div>
+
+<!-- ══ PORTAL ══ -->
+<div id="app">
+
+  <div class="portal-header">
+    <div class="branding">
+      <div class="logo-box">
+        <span class="logo-text">A.GASPAR</span>
+        <span class="logo-sep">·</span>
+        <span class="logo-text">SIURB / PMSP</span>
+      </div>
+      <h1 class="main-title">Ponte Graúna-Gaivotas</h1>
+      <p class="main-sub">Contrato 029/SIURB/2025 — Central de Painéis</p>
+    </div>
+    <div class="user-pill">
+      <img id="user-avatar" class="user-avatar" src="" alt="">
+      <span id="user-nome" class="user-nome"></span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </div>
+
+  <div class="paineis">
+
+    <a class="painel-card fisico" href="fisico.html">
+      <div class="card-icon fisico">📐</div>
+      <div class="card-label">Painel</div>
+      <div class="card-title">Avanço Físico</div>
+      <div class="card-desc">
+        Monitoramento do progresso construtivo por estrutura, fase e vão.
+        Mapa da ponte com status por elemento.
+      </div>
+      <span class="card-cta">Acessar painel →</span>
+    </a>
+
+    <a class="painel-card financeiro" href="financeiro.html">
+      <div class="card-icon financeiro">💰</div>
+      <div class="card-label">Painel</div>
+      <div class="card-title">Financeiro</div>
+      <div class="card-desc">
+        Acompanhamento de medições, valores contratados, acumulado e
+        histórico por período. EAP com 712 itens.
+      </div>
+      <span class="card-cta">Acessar painel →</span>
+    </a>
+
+  </div>
+
+  <div class="portal-footer">
+    PMO Construtora A. Gaspar S.A. &nbsp;·&nbsp; SIURB / PMSP &nbsp;·&nbsp; São Paulo
+  </div>
+
+</div><!-- /#app -->
+
+<script>
+const CLIENT_ID = '167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com';
+const WHITELIST = [
+  'jailtonsantos@construtoraagaspar.com.br',
+  'marcofrensel@construtoraagaspar.com.br',
+  'rodrigo.asfora@construtoraagaspar.com.br',
+];
+
+function onGoogleSignIn(response) {
+  document.getElementById('l-spinner').style.display = 'block';
+  document.getElementById('login-erro').style.display = 'none';
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    const email   = payload.email;
+
+    if (!WHITELIST.includes(email.toLowerCase())) {
+      document.getElementById('l-spinner').style.display = 'none';
+      document.getElementById('login-erro').style.display = 'block';
+      return;
+    }
+
+    sessionStorage.setItem('user_email',  email);
+    sessionStorage.setItem('user_nome',   payload.name);
+    sessionStorage.setItem('user_avatar', payload.picture);
+    sessionStorage.setItem('user_token',  response.credential);
+    entrar(payload.name, payload.picture);
+  } catch(e) {
+    document.getElementById('l-spinner').style.display = 'none';
+    document.getElementById('login-erro').style.display = 'block';
+  }
+}
+
+function entrar(nome, avatar) {
+  document.getElementById('tela-login').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+
+  const nm = document.getElementById('user-nome');
+  const av = document.getElementById('user-avatar');
+  if (nm) nm.textContent = nome;
+  if (av && avatar) { av.src = avatar; av.style.display = 'block'; }
+}
+
+function sair() {
+  sessionStorage.clear();
+  google.accounts.id.disableAutoSelect();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('login-erro').style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const nome   = sessionStorage.getItem('user_nome');
+  const avatar = sessionStorage.getItem('user_avatar');
+  if (nome) entrar(nome, avatar);
+});
+</script>
+</body>
+</html>
