@@ -286,7 +286,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow',sans-serif
   </div>
   <div class="hd-right">
     <div class="hd-badge"><strong id="n-execucao">1</strong> Em execução</div>
-    <div class="hd-badge"><strong id="n-total">4</strong> Obras cadastradas</div>
+    <div class="hd-badge"><strong id="n-total">5</strong> Obras cadastradas</div>
   </div>
 </div>
 
@@ -298,7 +298,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow',sans-serif
 </div>
 
 <!-- KMZ TOGGLE -->
-<div id="kmz-toggle">
+<div id="kmz-toggle" style="display:none">
   <button class="kmz-btn" id="btn-kmz" onclick="toggleKmz(this)">
     <span class="kmz-dot"></span>Traçado da Obra
   </button>
@@ -397,6 +397,7 @@ const OBRAS = [
     valor: 'R$ 347,5 Mi',
     lat: -23.722739629608064,
     lng: -46.67293154955003,
+    kmz: 'obras/SP-10/kmz/Segmento_1.kmz',
     portal: 'obras/SP-10/index.html',
     paineis: [
       { tipo:'fisico',      nome:'Avanço Físico',     desc:'Progresso construtivo por elemento', href:'obras/SP-10/fisico.html' },
@@ -404,60 +405,22 @@ const OBRAS = [
     ]
   },
   {
-    id: 'viaduto-vargem',
-    nome: 'Viaduto Vargem Grande',
-    local: 'São Paulo — SP',
-    contrato: '014/SIURB/2024',
-    contratante: 'SIURB / PMSP',
-    status: 'planejamento',
-    statusLabel: 'Planejamento',
-    inicio: 'Jan/2026',
-    prazo: 'Dez/2028',
-    valor: 'R$ 128,3 Mi',
-    lat: -23.63,
-    lng: -46.74,
-    portal: null,
+    id: 'oae3-rio-vermelho',
+    nome: 'OAE 3 · Ponte do Rio Vermelho',
+    local: 'Rondonópolis — MT',
+    contrato: 'LRV80/2023 | CW47524',
+    contratante: 'RUMO S.A.',
+    status: 'concluida',
+    statusLabel: 'Concluída',
+    inicio: 'Jan/2024',
+    prazo: 'Nov/2025',
+    valor: 'R$ 146,0 Mi',
+    lat: -16.4706,
+    lng: -54.6358,
+    kmz: 'obras/MT-02/kmz/MT-002.kmz',
+    portal: 'obras/MT-02/index.html',
     paineis: [
-      { tipo:'fisico',     nome:'Avanço Físico',     desc:'Em breve', href:null },
-      { tipo:'financeiro', nome:'Painel Financeiro',  desc:'Em breve', href:null },
-    ]
-  },
-  {
-    id: 'ponte-guaruja',
-    nome: 'Travessia Guarujá–Santos',
-    local: 'Guarujá — SP',
-    contrato: '007/DER/2025',
-    contratante: 'DER-SP',
-    status: 'estudo',
-    statusLabel: 'Estudo / Projeto',
-    inicio: '—',
-    prazo: '—',
-    valor: 'R$ 890,0 Mi',
-    lat: -23.99,
-    lng: -46.27,
-    portal: null,
-    paineis: [
-      { tipo:'fisico',     nome:'Avanço Físico',     desc:'Aguardando contrato', href:null },
-      { tipo:'financeiro', nome:'Painel Financeiro',  desc:'Aguardando contrato', href:null },
-    ]
-  },
-  {
-    id: 'viaduto-rj',
-    nome: 'Viaduto Zona Portuária',
-    local: 'Rio de Janeiro — RJ',
-    contrato: '031/SEINFRA/2024',
-    contratante: 'SEINFRA / RJ',
-    status: 'planejamento',
-    statusLabel: 'Planejamento',
-    inicio: 'Mar/2026',
-    prazo: 'Nov/2029',
-    valor: 'R$ 215,0 Mi',
-    lat: -22.895,
-    lng: -43.18,
-    portal: null,
-    paineis: [
-      { tipo:'fisico',     nome:'Avanço Físico',     desc:'Em breve', href:null },
-      { tipo:'financeiro', nome:'Painel Financeiro',  desc:'Em breve', href:null },
+      { tipo:'financeiro', nome:'Relatório Gerencial', desc:'Faturamento, custos e medições — BM final 18', href:'obras/MT-02/MT-002_Relatorio_Gerencial.html' },
     ]
   },
 ];
@@ -616,8 +579,10 @@ function abrirPanel(obra, marker) {
     cta.textContent = 'Portal não disponível';
   }
 
+  // KMZ toggle por obra
+  atualizarKmzToggle(obra);
+
   panel.classList.add('open');
-  // Centralizar mapa na obra, deslocar para a esquerda do painel
   setTimeout(()=>{
     map.panTo([obra.lat, obra.lng], {animate:true});
   }, 100);
@@ -629,6 +594,7 @@ function fecharPanel(){
   const thumb = document.getElementById('sp-thumb');
   const extraDiv = thumb.querySelector('div:not(.sp-thumb-overlay)');
   if(extraDiv) extraDiv.remove();
+  document.getElementById('kmz-toggle').style.display = 'none';
 }
 
 // Fechar ao clicar no mapa
@@ -638,11 +604,38 @@ map.on('click', fecharPanel);
 document.getElementById('n-execucao').textContent = OBRAS.filter(o=>o.status==='execucao').length;
 document.getElementById('n-total').textContent = OBRAS.length;
 
-// ── KMZ OVERLAY ──────────────────────────────────────────
+// ── KMZ OVERLAY (por obra) ────────────────────────────────
 var kmzLayer = null;
 var kmzVisible = false;
+var kmzLoadedUrl = null;
 
-async function carregarKmz(url) {
+const kmzColorMap = {
+  execucao:    '#FBBF24',
+  planejamento:'#60A5FA',
+  estudo:      'rgba(255,255,255,.55)',
+  concluida:   '#34D399',
+};
+
+function atualizarKmzToggle(obra) {
+  const toggle = document.getElementById('kmz-toggle');
+  const btn    = document.getElementById('btn-kmz');
+  if (!obra.kmz) {
+    toggle.style.display = 'none';
+    if (kmzLayer) { map.removeLayer(kmzLayer); kmzLayer = null; kmzVisible = false; kmzLoadedUrl = null; }
+    return;
+  }
+  toggle.style.display = 'block';
+  if (kmzLoadedUrl && kmzLoadedUrl !== obra.kmz) {
+    if (kmzLayer) { map.removeLayer(kmzLayer); kmzLayer = null; kmzVisible = false; }
+    kmzLoadedUrl = null;
+    btn.classList.remove('active');
+  }
+  btn.dataset.kmz    = obra.kmz;
+  btn.dataset.status = obra.status;
+}
+
+async function carregarKmz(url, status) {
+  const cor = kmzColorMap[status] || '#FBBF24';
   const res = await fetch(url);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const buf  = await res.arrayBuffer();
@@ -653,27 +646,31 @@ async function carregarKmz(url) {
   const kmlDom = new DOMParser().parseFromString(kmlStr, 'text/xml');
   const geojson = toGeoJSON.kml(kmlDom);
   return L.geoJSON(geojson, {
-    style: { color:'#FBBF24', weight:2.5, opacity:.9, fillOpacity:.12, fillColor:'#FBBF24' },
-    pointToLayer: function(f, latlng) {
-      return L.circleMarker(latlng, { radius:4, color:'#FBBF24', fillColor:'#FBBF24', fillOpacity:.8, weight:1 });
-    }
+    style: { color:cor, weight:2.5, opacity:.9, fillOpacity:.12, fillColor:cor },
+    pointToLayer: (f, latlng) =>
+      L.circleMarker(latlng, { radius:4, color:cor, fillColor:cor, fillOpacity:.8, weight:1 })
   });
 }
 
 async function toggleKmz(btn) {
-  if (!kmzLayer) {
+  const url    = btn.dataset.kmz;
+  const status = btn.dataset.status;
+
+  if (!kmzLayer || kmzLoadedUrl !== url) {
     btn.innerHTML = '<span class="kmz-dot"></span>Carregando…';
     btn.disabled = true;
     try {
-      kmzLayer = await carregarKmz('obras/SP-10/kmz/Segmento_1.kmz');
+      if (kmzLayer) { map.removeLayer(kmzLayer); kmzLayer = null; }
+      kmzLayer = await carregarKmz(url, status);
       kmzLayer.addTo(map);
       kmzVisible = true;
+      kmzLoadedUrl = url;
       btn.innerHTML = '<span class="kmz-dot"></span>Traçado da Obra';
       btn.disabled = false;
       btn.classList.add('active');
     } catch(e) {
       console.error('Erro ao carregar KMZ:', e);
-      kmzLayer = null;
+      kmzLayer = null; kmzLoadedUrl = null;
       btn.innerHTML = '<span class="kmz-dot"></span>Traçado da Obra';
       btn.disabled = false;
       alert('Erro ao carregar traçado:\n' + e.message + '\n\nAbra o arquivo via servidor local (ex: Live Server no VS Code).');
