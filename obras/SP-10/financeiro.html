@@ -173,15 +173,15 @@ main{padding:20px 28px;max-width:1800px;margin:0 auto;}
 .leg-line{width:20px;height:3px;border-radius:2px;}
 
 /* ── AUTH ── */
-#tela-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--g-esc);}
+#tela-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#1A0D4A;}
 #app{display:none;}
-.login-card{background:var(--branco);border-radius:16px;padding:48px 56px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);max-width:420px;width:90%;}
-.login-logo{background:var(--g-clr);border-radius:10px;padding:14px 24px;display:inline-block;margin-bottom:28px;}
-.login-titulo{font-size:22px;font-weight:700;color:var(--g-pri);margin-bottom:6px;line-height:1.2;}
-.login-sub{font-size:12px;color:var(--cinza);margin-bottom:32px;line-height:1.5;}
-.login-aviso{font-size:10px;color:var(--cinza);margin-top:20px;padding-top:16px;border-top:1px solid var(--borda);line-height:1.6;}
-.login-erro{display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;font-size:11px;color:#DC2626;margin-top:16px;}
-.l-spinner{display:none;width:32px;height:32px;border:3px solid var(--g-clr);border-top-color:var(--g-pri);border-radius:50%;animation:lspin .8s linear infinite;margin:16px auto 0;}
+.login-card{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:36px 44px;text-align:center;width:360px;max-width:90vw;}
+.login-logo{display:inline-block;margin-bottom:22px;}
+.login-titulo{font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.25;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:28px;line-height:1.5;}
+.login-aviso{font-size:10px;color:rgba(255,255,255,.3);margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);line-height:1.6;}
+.login-erro{display:none;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:8px;padding:10px 14px;font-size:11px;color:#FCA5A5;margin-top:16px;}
+.l-spinner{display:none;width:32px;height:32px;border:3px solid rgba(255,255,255,.12);border-top-color:rgba(255,255,255,.75);border-radius:50%;animation:lspin .8s linear infinite;margin:16px auto 0;}
 @keyframes lspin{to{transform:rotate(360deg);}}
 .user-info-bar{display:flex;align-items:center;gap:8px;}
 .user-avatar-img{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:none;}
@@ -197,7 +197,7 @@ main{padding:20px 28px;max-width:1800px;margin:0 auto;}
 <div id="tela-login">
   <div class="login-card">
     <div class="login-logo">
-      <span style="font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:var(--g-pri);letter-spacing:.5px">A.GASPAR &middot; SIURB/PMSP</span>
+      <span style="font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.6px">A.GASPAR &middot; SIURB/PMSP</span>
     </div>
     <div class="login-titulo">Ponte Graúna-Gaivotas</div>
     <div class="login-sub">Painel Financeiro — Medição<br>Contrato 029/SIURB/2025 — Acesso restrito</div>
