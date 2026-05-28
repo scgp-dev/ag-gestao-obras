@@ -115,6 +115,8 @@ body{
 .painel-card:hover::before{height:6px;}
 .painel-card.financeiro::before{background:#B45309;}
 .painel-card.financeiro:hover{border-color:#FCD34D;}
+.painel-card.custos::before{background:#166534;}
+.painel-card.custos:hover{border-color:#86EFAC;}
 
 .card-icon{
   width:48px;height:48px;border-radius:12px;
@@ -123,6 +125,10 @@ body{
 }
 .card-icon.fisico{background:var(--g-clr);}
 .card-icon.financeiro{background:#FEF3C7;}
+.card-icon.custos{background:#DCFCE7;}
+.custos .card-title{color:#166534;}
+.custos .card-cta{color:#166534;background:#DCFCE7;}
+.custos:hover .card-cta{background:#86EFAC;}
 .card-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--cinza);margin-bottom:6px;}
 .card-title{font-size:20px;font-weight:700;color:var(--g-pri);margin-bottom:8px;line-height:1.2;}
 .financeiro .card-title{color:#92400E;}
@@ -217,6 +223,17 @@ body{
       <div class="card-desc">
         Acompanhamento de medições, valores contratados, acumulado e
         histórico por período. EAP com 712 itens.
+      </div>
+      <span class="card-cta">Acessar painel →</span>
+    </a>
+
+    <a class="painel-card custos" href="custos/index.html">
+      <div class="card-icon custos">📊</div>
+      <div class="card-label">Painel</div>
+      <div class="card-title">Custos</div>
+      <div class="card-desc">
+        Controle de desembolsos por fornecedor e categoria. Curva&nbsp;S
+        custo&nbsp;×&nbsp;faturamento. 2.454 lançamentos · até Abr/2026.
       </div>
       <span class="card-cta">Acessar painel →</span>
     </a>

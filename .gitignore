@@ -1,0 +1,12 @@
+# Arquivos-fonte / desenvolvimento — não publicar no GitHub Pages
+*.xlsx
+*.xls
+dados.json
+custos_template.html
+
+# PDFs de notas fiscais (documentos originais)
+obras/SP-10/faturamento/
+
+# Outros
+.DS_Store
+Thumbs.db
