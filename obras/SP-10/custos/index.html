@@ -60,14 +60,29 @@ nav button.ativo{color:var(--branco);border-bottom-color:#FCD34D;font-weight:600
 main{padding:20px 28px;max-width:1920px;margin:0 auto;}
 .pagina{display:none;}.pagina.ativa{display:block;}
 
-/* KPIs */
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
-.kpi{background:var(--branco);border-radius:10px;padding:16px 20px;box-shadow:var(--sombra);border-left:4px solid var(--g-pri);}
-.kpi.amarelo{border-left-color:#D97706;}.kpi.verde{border-left-color:#16A34A;}
-.kpi.vermelho{border-left-color:#DC2626;}.kpi.cinza{border-left-color:#64748B;}
-.kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--cinza);margin-bottom:6px;}
-.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--g-esc);line-height:1.1;}
-.kpi-sub{font-size:11px;color:var(--cinza);margin-top:4px;}
+/* ── KPI HERO BLOCK ── */
+.kpi-hero{background:var(--branco);border-radius:14px;box-shadow:0 4px 32px rgba(40,21,110,.13);margin-bottom:22px;overflow:hidden;}
+.kpi-hero-hd{background:linear-gradient(120deg,#1A0D4A 0%,#3D2490 100%);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.kpi-hero-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;letter-spacing:1.2px;text-transform:uppercase;}
+.kpi-hero-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;}
+.kpi-hero-tag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 16px;font-size:11px;color:rgba(255,255,255,.75);white-space:nowrap;font-weight:500;}
+.kpi-row{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;}
+.kpi-sep{background:var(--borda);margin:20px 0;}
+.kpi-card{padding:28px 36px;display:flex;flex-direction:column;}
+.kpi-card-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.kpi-ibox{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .3s;}
+.kpi-ibox.custo{background:#EAE7F5;}.kpi-ibox.fat{background:#DCFCE7;}.kpi-ibox.res{background:#FEF9C3;}
+.kpi-card-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--cinza);line-height:1.4;}
+.kpi-card-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:700;color:var(--g-esc);line-height:1;margin-bottom:16px;transition:color .3s;}
+.kpi-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;}
+.kpi-tag{background:var(--fundo);border:1px solid var(--borda);border-radius:20px;padding:3px 11px;font-size:10px;font-weight:600;color:var(--cinza);white-space:nowrap;}
+.kpi-tag.info{background:#EAE7F5;border-color:var(--g-brd);color:var(--g-pri);}
+.kpi-tag.ok{background:#DCFCE7;border-color:#86EFAC;color:#166534;}
+.kpi-tag.alerta{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B;}
+/* seção diagnóstico */
+.diag-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.diag-hd-line{flex:1;height:1px;background:var(--borda);}
+.diag-hd-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--cinza);white-space:nowrap;}
 
 /* Cards */
 .chart-card{background:var(--branco);border-radius:10px;padding:20px;box-shadow:var(--sombra);}
@@ -236,26 +251,83 @@ td.neutro{color:var(--cinza);}
 <!-- ========== VISÃO GERAL ========== -->
 <div class="pagina ativa" id="pg-visao">
 
-  <div class="kpi-grid">
-    <div class="kpi">
-      <div class="kpi-lbl">Custo Total</div>
-      <div class="kpi-val" id="kpi-tot">—</div>
-      <div class="kpi-sub">Mai/25 – Abr/26 · acumulado</div>
+  <!-- KPI Hero Block -->
+  <div class="kpi-hero">
+    <div class="kpi-hero-hd">
+      <div>
+        <div class="kpi-hero-title">Visão Financeira Consolidada</div>
+        <div class="kpi-hero-sub">SP-010 · Ponte Graúna-Gaivotas · Construtora A. Gaspar S/A × SIURB/PMSP · Contrato 029/SIURB/2025</div>
+      </div>
+      <div class="kpi-hero-tag" id="kpi-hero-ref">Base: 30/04/2026</div>
     </div>
-    <div class="kpi verde">
-      <div class="kpi-lbl">Faturado Acumulado</div>
-      <div class="kpi-val">R$ 62.400.574,98</div>
-      <div class="kpi-sub">9 NFs emitidas · até Abr/2026</div>
-    </div>
-    <div class="kpi vermelho" id="kpi-resultado-card">
-      <div class="kpi-lbl">Resultado (Fat. − Custo)</div>
-      <div class="kpi-val" id="kpi-saldo">—</div>
-      <div class="kpi-sub" id="kpi-saldo-sub">—</div>
+    <div class="kpi-row">
+
+      <!-- Custo -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-ibox custo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D2490" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="kpi-card-lbl">Custo Total<br>Acumulado</div>
+        </div>
+        <div class="kpi-card-val" id="kpi-tot">—</div>
+        <div class="kpi-tags">
+          <span class="kpi-tag info">Mai/25 – Abr/26</span>
+          <span class="kpi-tag" id="kpi-hero-count">— lançamentos</span>
+        </div>
+      </div>
+
+      <div class="kpi-sep"></div>
+
+      <!-- Faturamento -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-ibox fat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <div class="kpi-card-lbl">Faturamento<br>Acumulado</div>
+        </div>
+        <div class="kpi-card-val">R$ 62.400.574,98</div>
+        <div class="kpi-tags">
+          <span class="kpi-tag ok">9 NFs emitidas</span>
+          <span class="kpi-tag">até Abr/2026</span>
+        </div>
+      </div>
+
+      <div class="kpi-sep"></div>
+
+      <!-- Resultado -->
+      <div class="kpi-card" id="kpi-resultado-card">
+        <div class="kpi-card-top">
+          <div class="kpi-ibox res" id="kpi-res-ibox">
+            <svg id="kpi-res-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#854D0E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+              <polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
+          <div class="kpi-card-lbl">Resultado<br>Fat. − Custo</div>
+        </div>
+        <div class="kpi-card-val" id="kpi-saldo">—</div>
+        <div class="kpi-tags">
+          <span class="kpi-tag" id="kpi-saldo-sub">—</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
+  <!-- Separador Curva S -->
+  <div class="diag-hd"><div class="diag-hd-line"></div><div class="diag-hd-lbl">Curva S — Desempenho Financeiro</div><div class="diag-hd-line"></div></div>
+
   <!-- Curva S -->
-  <div class="chart-card" style="margin-bottom:16px;">
+  <div class="chart-card" style="margin-bottom:22px;">
     <div class="card-header">
       <div>
         <div class="card-titulo">Curva S — Custo × Faturamento × Resultado</div>
@@ -271,7 +343,9 @@ td.neutro{color:var(--cinza);}
     <div style="height:340px;"><canvas id="chCurva"></canvas></div>
   </div>
 
-  <!-- Painel Diagnóstico -->
+  <!-- Separador Diagnóstico -->
+  <div class="diag-hd"><div class="diag-hd-line"></div><div class="diag-hd-lbl">Diagnóstico Mensal</div><div class="diag-hd-line"></div></div>
+
   <div class="charts-2col" id="div-diagnostico">
 
     <!-- Tabela Custo × Faturado por Mês -->
@@ -687,16 +761,31 @@ function renderSB(){
 
 function renderKPIs(tot){
   document.getElementById('kpi-tot').textContent=R(tot);
-  // Resultado = Faturado Acumulado − Custo Total (soma dinâmica das NFs)
+  // Contagem dinâmica no hero
+  const cnt=document.getElementById('kpi-hero-count');
+  if(cnt) cnt.textContent=filtrados.length.toLocaleString('pt-BR')+' lançamentos';
+  // Resultado = Faturado Acumulado − Custo Total
   const fat=Object.values(FATURAMENTO).reduce((a,b)=>a+b,0);
   const resultado=fat-tot;
   const elVal=document.getElementById('kpi-saldo');
   const elSub=document.getElementById('kpi-saldo-sub');
-  const card=document.getElementById('kpi-resultado-card');
+  const ibox=document.getElementById('kpi-res-ibox');
+  const svg=document.getElementById('kpi-res-svg');
   elVal.textContent=(resultado>=0?'+ ':' − ')+R(Math.abs(resultado));
-  elVal.style.color=resultado>=0?'#16A34A':'#DC2626';
-  card.style.borderLeftColor=resultado>=0?'#16A34A':'#DC2626';
-  elSub.textContent=resultado>=0?'Margem positiva no período':'Custo acima do faturamento';
+  if(resultado>=0){
+    elVal.style.color='#16A34A';
+    if(ibox) ibox.style.background='#DCFCE7';
+    if(svg) svg.setAttribute('stroke','#166534');
+    elSub.textContent='Margem positiva no período';
+    elSub.className='kpi-tag ok';
+  } else {
+    elVal.style.color='#DC2626';
+    if(ibox) ibox.style.background='#FEE2E2';
+    if(svg){svg.setAttribute('stroke','#DC2626');
+      svg.innerHTML='<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>';}
+    elSub.textContent='Custo acima do faturamento';
+    elSub.className='kpi-tag alerta';
+  }
 }
 
 function renderCurva(){
