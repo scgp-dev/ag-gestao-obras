@@ -144,6 +144,7 @@ td.dt{white-space:nowrap;color:var(--cinza);font-size:11px;}
 .c15{background:#FDF4FF;color:#86198F;}  /* Prestação Contas */
 .c16{background:#F1F5F9;color:#475569;}  /* Administrativo */
 .c17{background:#F9FAFB;color:#6B7280;}  /* Outros */
+.c18{background:#E0F2FE;color:#0369A1;}  /* Locação Veículos Leves */
 
 /* Ranking */
 .rank-n{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--g-brd);text-align:center;width:40px;}
@@ -466,6 +467,7 @@ const CATS = [
   { id:'Prestação de Contas',      cls:'c15' },
   { id:'Administrativo',           cls:'c16' },
   { id:'Outros',                   cls:'c17' },
+  { id:'Locação de Veículos Leves',cls:'c18' },
 ];
 const CLS = Object.fromEntries(CATS.map(c=>[c.id, c.cls]));
 const CORES = {
@@ -487,6 +489,7 @@ const CORES = {
   'Prestação de Contas':      '#86198F',
   'Administrativo':           '#475569',
   'Outros':                   '#9CA3AF',
+  'Locação de Veículos Leves':'#0369A1',
 };
 
 function categorizar(r) {
@@ -518,8 +521,11 @@ function categorizar(r) {
   if (/CONVICTA IND/.test(n) && /COMPRA|C45|BETONEIRA|SILO/.test(h)) return 'Equipamentos (Compra)';
   if (/COMPRA DE.*CAMINHAO|COMPRA DO C45/.test(h)) return 'Equipamentos (Compra)';
 
+  // 5b. Locação de Veículos Leves
+  if (/UNIDAS LOCAD/.test(n)) return 'Locação de Veículos Leves';
+
   // 6. Locação de Equipamentos
-  if (/AWURE|EDCIM COMERCIO|J E C VIANA|NMQ COMERCIO DE MAQ|CONVICTA LOCAC|MRV LOCAC|TOTAL PTA LOCAC|SUED LOCAC|RAMIRO EQUIP|SANY IMPORT|MASTER EQUIP|ENEQUIPA|ROCESTER EQUIP|STUHLERT MAQ|UNIDAS LOCAD|MULLER GUIN|LMA LOCAC|A ALUGAMAQUINAS|AG RENTAL|D F D CONST|BAUEN ENGENH/.test(n)) return 'Locação de Equipamentos';
+  if (/AWURE|EDCIM COMERCIO|J E C VIANA|NMQ COMERCIO DE MAQ|CONVICTA LOCAC|MRV LOCAC|TOTAL PTA LOCAC|SUED LOCAC|RAMIRO EQUIP|SANY IMPORT|MASTER EQUIP|ENEQUIPA|ROCESTER EQUIP|STUHLERT MAQ|MULLER GUIN|LMA LOCAC|A ALUGAMAQUINAS|AG RENTAL|D F D CONST|BAUEN ENGENH/.test(n)) return 'Locação de Equipamentos';
   if (/LOCACAO DE ESCAVADEIRA|LOCACAO DE CAMINHAO|LOCACAO DE ROLO|LOCACAO DE GUINDASTE|LOCACAO DE EQUIP|LOCACAO DE MAQUINA|ALUGUEL DE CAMINHAO|ALUGUEL DE ESCAVADEIRA|ALUGUEL DE GUINDASTE|ALUGUEL DE MAQUINA|ALUGUEL DE EQUIP/.test(h)) return 'Locação de Equipamentos';
 
   // 7. Mão de Obra (salários, INSS folha, FGTS, VT, férias, 13°, rescisão, contrib. retributiva, TAR transf)
