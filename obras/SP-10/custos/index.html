@@ -650,9 +650,11 @@ function categorizar(r) {
   const n = (r.nome||'').toUpperCase();
   const hn = h + ' ' + n;
 
-  // 1. Aço Estrutural — ArcelorMittal com BOBINA vai para Fundação (armadura de estaca)
+  // 1. Aço Estrutural — exceções antes da regra geral
   if (/ARCELORMITTAL/.test(n) && /BOBINA/.test(h)) return 'Fundação';
-  if (/ARCELORMITTAL|GERDAU ACOS|GUERDAU ACOS|CALTUBOS/.test(n)) return 'Aço Estrutural';
+  if (/CALTUBOS/.test(n)) return 'Fundação';
+  if (/GERDAU ACOS|GUERDAU ACOS/.test(n) && /CHAPA|PERFIL/.test(h)) return 'Embarcações / Flutuantes';
+  if (/ARCELORMITTAL|GERDAU ACOS|GUERDAU ACOS/.test(n)) return 'Aço Estrutural';
 
   // 2. Concreto
   if (/CONCRESERV|SUPERMIX CONCRETO/.test(n)) return 'Concreto';
