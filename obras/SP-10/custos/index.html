@@ -526,6 +526,7 @@ function categorizar(r) {
   if (/CONSTRUTORA A GASPAR/.test(n) && /FOLHA|ADIANTAMENTO/.test(h)) return 'Mão de Obra';
   if (/^FOLHA\/|^ADIANTAMENTO\/|^13°|^13ª|^FERIAS\/|^RESCISAO\//.test(h)) return 'Mão de Obra';
   if (/INSS FOLHA|INSS 13|FGTS|VALE TRANSPORT|CONTRIB.*RETRIB|RESCISAO|13.*SALARIO|13.*SAL\b|TAR.*TRANSF.*SALARIO|TRANSF.*SALARIO/.test(h)) return 'Mão de Obra';
+  if (/CONTRIBUICAO ADICIONAL.*SENAI|CONTRIB.*ADICIONAL.*SENAI/.test(hn)) return 'Mão de Obra';
   if (/CAIXA ECONOM/.test(n) && /FGTS/.test(h)) return 'Mão de Obra';
   if (/INSTITUTO NACIONAL D/.test(n) && /INSS FOLHA|INSS 13/.test(h)) return 'Mão de Obra';
   if (/SINDICATO DAS EMPRES/.test(n) && /VALE TRANSPORT|CONTRIB/.test(h)) return 'Mão de Obra';
