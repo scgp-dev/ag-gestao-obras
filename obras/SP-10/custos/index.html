@@ -976,17 +976,19 @@ function renderDiagnostico(){
     const resAcum=acFat-acCusto;
     const clsRes=res>0?'positivo':res<0?'negativo':'neutro';
     const clsAcum=resAcum>0?'positivo':resAcum<0?'negativo':'neutro';
+    // fat===0 mas custo>0 = sem medição no mês, mas resultado deve aparecer negativo
+    const fatCell=fat>0?R(fat):'<span style="color:var(--cinza);font-size:11px">sem medição</span>';
     return `<tr>
       <td style="font-weight:600">${lm(m)}</td>
       <td class="r">${R(custo)}</td>
-      <td class="r">${fat?R(fat):'<span style="color:var(--cinza);font-size:11px">sem medição</span>'}</td>
-      <td class="r ${clsRes}">${fat?(res>=0?'+ ':' − ')+R(Math.abs(res)):'—'}</td>
-      <td class="r ${clsAcum}">${(res>=0?'+ ':' − ')+R(Math.abs(resAcum))}</td>
+      <td class="r">${fatCell}</td>
+      <td class="r ${clsRes}">${(res>=0?'+ ':' − ')+R(Math.abs(res))}</td>
+      <td class="r ${clsAcum}">${(resAcum>=0?'+ ':' − ')+R(Math.abs(resAcum))}</td>
     </tr>`;
   });
-  // Linha de totais
+  // Linha de totais — usa soma dinâmica do FATURAMENTO (mesma base do KPI)
   const totCusto=filtrados.reduce((s,r)=>s+r.total,0);
-  const totFat=62400575.15;
+  const totFat=Object.values(FATURAMENTO).reduce((a,b)=>a+b,0);
   const totRes=totFat-totCusto;
   linhasDiag.push(`<tr style="background:#F8F7FD;font-weight:700;border-top:2px solid var(--borda)">
     <td>TOTAL</td>
