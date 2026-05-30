@@ -650,11 +650,13 @@ function categorizar(r) {
   const n = (r.nome||'').toUpperCase();
   const hn = h + ' ' + n;
 
-  // 1. Aço Estrutural — exceções antes da regra geral
+  // 1. Aço / Fundação — Gerdau e ArcelorMittal
   if (/ARCELORMITTAL/.test(n) && /BOBINA/.test(h)) return 'Fundação';
   if (/CALTUBOS/.test(n)) return 'Fundação';
-  if (/GERDAU ACOS|GUERDAU ACOS/.test(n) && /CHAPA|PERFIL/.test(h)) return 'Embarcações / Flutuantes';
-  if (/ARCELORMITTAL|GERDAU ACOS|GUERDAU ACOS/.test(n)) return 'Aço Estrutural';
+  if (/ARCELORMITTAL|GERDAU ACOS|GUERDAU ACOS/.test(n)){
+    if (/VERGALHAO|VERGALHÃO|ARAME|PREGO/.test(h)) return 'Aço Estrutural';
+    return 'Embarcações / Flutuantes'; // chapa, perfil, cantoneira e demais
+  }
 
   // 2. Concreto
   if (/CONCRESERV|SUPERMIX CONCRETO/.test(n)) return 'Concreto';
