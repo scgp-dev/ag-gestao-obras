@@ -454,7 +454,7 @@ const CATS = [
   { id:'Embarcações / Flutuantes', cls:'c3'  },
   { id:'Equipamentos (Compra)',    cls:'c4'  },
   { id:'Locação de Equipamentos',  cls:'c5'  },
-  { id:'Mão de Obra Direta',       cls:'c6'  },
+  { id:'Mão de Obra',       cls:'c6'  },
   { id:'Encargos Trabalhistas',    cls:'c7'  },
   { id:'Impostos e Retenções',     cls:'c8'  },
   { id:'Consultoria e Projetos',   cls:'c9'  },
@@ -475,7 +475,7 @@ const CORES = {
   'Embarcações / Flutuantes': '#0369A1',
   'Equipamentos (Compra)':    '#7E22CE',
   'Locação de Equipamentos':  '#065F46',
-  'Mão de Obra Direta':       '#92400E',
+  'Mão de Obra':       '#92400E',
   'Encargos Trabalhistas':    '#BE123C',
   'Impostos e Retenções':     '#6D28D9',
   'Consultoria e Projetos':   '#3730A3',
@@ -520,20 +520,21 @@ function categorizar(r) {
 
   // 6. Locação de Equipamentos
   if (/AWURE|EDCIM COMERCIO|J E C VIANA|NMQ COMERCIO DE MAQ|CONVICTA LOCAC|MRV LOCAC|TOTAL PTA LOCAC|SUED LOCAC|RAMIRO EQUIP|SANY IMPORT|MASTER EQUIP|ENEQUIPA|ROCESTER EQUIP|STUHLERT MAQ|UNIDAS LOCAD|MULLER GUIN|LMA LOCAC|A ALUGAMAQUINAS|AG RENTAL|D F D CONST|BAUEN ENGENH/.test(n)) return 'Locação de Equipamentos';
-  if (/LOCACAO DE ESCAVADEIRA|LOCACAO DE CAMINHAO|LOCACAO DE ROLO|LOCACAO DE GUINDASTE|LOCACAO DE EQUIP|LOCACAO DE MAQUINA/.test(h)) return 'Locação de Equipamentos';
+  if (/LOCACAO DE ESCAVADEIRA|LOCACAO DE CAMINHAO|LOCACAO DE ROLO|LOCACAO DE GUINDASTE|LOCACAO DE EQUIP|LOCACAO DE MAQUINA|ALUGUEL DE CAMINHAO|ALUGUEL DE ESCAVADEIRA|ALUGUEL DE GUINDASTE|ALUGUEL DE MAQUINA|ALUGUEL DE EQUIP/.test(h)) return 'Locação de Equipamentos';
 
-  // 7. Mão de Obra Direta
-  if (/CONSTRUTORA A GASPAR/.test(n) && /FOLHA|ADIANTAMENTO/.test(h)) return 'Mão de Obra Direta';
-  if (/^FOLHA\/|^ADIANTAMENTO\/|^13° SALARIO|^FERIAS\//.test(h)) return 'Mão de Obra Direta';
+  // 7. Mão de Obra (salários, INSS folha, FGTS, VT, férias, 13°, rescisão, contrib. retributiva, TAR transf)
+  if (/CONSTRUTORA A GASPAR/.test(n) && /FOLHA|ADIANTAMENTO/.test(h)) return 'Mão de Obra';
+  if (/^FOLHA\/|^ADIANTAMENTO\/|^13°|^13ª|^FERIAS\/|^RESCISAO\//.test(h)) return 'Mão de Obra';
+  if (/INSS FOLHA|INSS 13|FGTS|VALE TRANSPORT|CONTRIB.*RETRIB|RESCISAO|13.*SALARIO|13.*SAL\b|TAR.*TRANSF.*SALARIO|TRANSF.*SALARIO/.test(h)) return 'Mão de Obra';
+  if (/CAIXA ECONOM/.test(n) && /FGTS/.test(h)) return 'Mão de Obra';
+  if (/INSTITUTO NACIONAL D/.test(n) && /INSS FOLHA|INSS 13/.test(h)) return 'Mão de Obra';
+  if (/SINDICATO DAS EMPRES/.test(n) && /VALE TRANSPORT|CONTRIB/.test(h)) return 'Mão de Obra';
 
-  // 8. Encargos Trabalhistas
-  if (/CAIXA ECONOM/.test(n) && /FGTS/.test(h)) return 'Encargos Trabalhistas';
-  if (/INSTITUTO NACIONAL D/.test(n) && /INSS FOLHA|INSS 13/.test(h)) return 'Encargos Trabalhistas';
+  // 8. Encargos Trabalhistas (saúde, alimentação, jovem aprendiz — benefícios não-folha)
   if (/PLUXEE|TICKET SOLUCOES HDFG/.test(n) && /VALE|BENEFICIO|TICKET/.test(h)) return 'Encargos Trabalhistas';
-  if (/SINDICATO DAS EMPRES/.test(n) && /VALE TRANSPORT/.test(h)) return 'Encargos Trabalhistas';
   if (/UNIMED|SUL AMERICA COMPAN|HUMANA ASSIST|UNYBRASIL/.test(n)) return 'Encargos Trabalhistas';
   if (/PROGRAMA JOVEM APRENDIZ|CASA JOVEM/.test(hn)) return 'Encargos Trabalhistas';
-  if (/FGTS|VALE TRANSPORT|PLANO DE SAUDE/.test(h)) return 'Encargos Trabalhistas';
+  if (/PLANO DE SAUDE/.test(h)) return 'Encargos Trabalhistas';
 
   // 9. Impostos e Retenções
   if (/MINISTERIO DA FAZ|SECRETARIA MUNICIPAL|SECRETARIA ESTADUAL|MUNICIPIO DE|DEPARTAMENTO ESTADUAL|INSTITUTO NACIONAL D|CORPO DE BOMBEIROS|CONSELHO REGIONAL|RECEITA FEDERAL/.test(n)) return 'Impostos e Retenções';
@@ -544,8 +545,10 @@ function categorizar(r) {
   if (/BFA CONSULT|PILARES CONS|PAULISTA ENGENH|PAULO SERGIO OLIVEIR|MARCIA APARE|SERGIO CAETANO|ENGCONSULT|CONVISAO|GREENLEGIS|SGLOBAL|MULTIPLANO ENGENH|ENESCIL|A1 ARQUEOL|BIOFOCUS|CONTROLE ANALITICO|MARCOS FREN|EMPRESA DE ENGENH/.test(n)) return 'Consultoria e Projetos';
   if (/TOPOGRAFIA|PROJETO DE TR|COORDENACAO E ANALISE DE PROJ|CONSULTORIA TECNICA|SERVICO DE ENGENHARIA|ARQUEOLOGIA|GEOTECNIA/.test(h)) return 'Consultoria e Projetos';
 
-  // 11. Combustíveis
+  // 11. Combustíveis — TICKLOG = abastecimento de frota; DIESEL = gerador/maquinário (não é frota)
+  if (/DIESEL/.test(h)) return 'Outros';
   if (/RAIZEN|VIBRA ENERGIA|ICP COMERCIO DE COMB|AIR BP/.test(n)) return 'Combustíveis';
+  if (/TICKLOG/.test(hn)) return 'Combustíveis';
   if (/TICKET SOLUCOES HDFG/.test(n) && /COMBUSTIVEL/.test(h)) return 'Combustíveis';
   if (/COMBUSTIVEL|COMBUSTÍVEL|ABASTECIMENTO DE/.test(h)) return 'Combustíveis';
 
@@ -553,9 +556,9 @@ function categorizar(r) {
   if (/AVLA SEGUROS|SUL AMERICA SEGURO/.test(n)) return 'Seguros';
   if (/APOLICE|SEGURO DE VIDA|SEGURO OBRA/.test(h)) return 'Seguros';
 
-  // 13. Aluguel de Imóveis
-  if (/NEC NEGOCIOS IMOB|ANTERO ANDRADE|ANASILDA CARDOSO|ROMILDO ANTONIO|NOVA VIDA PLAN|ESPEDITO FRANC|RTC NEGOCIOS|ROSANA THAUMA|PAULO SERGIO OLIVEIR/.test(n) && /ALUGUEL/.test(h)) return 'Aluguel de Imóveis';
-  if (/ALUGUEL DE IMOVEL|ALUGUEL DE CASA|ALUGUEL DE DOIS|CAUCOES DE ALUGUEL/.test(h)) return 'Aluguel de Imóveis';
+  // 13. Aluguel de Imóveis (inclui abreviações ALG, erros de grafia, CAUCAO/CAUCOES)
+  if (/NEC NEGOCIOS IMOB|ANTERO ANDRADE|ANASILDA CARDOSO|ROMILDO ANTONIO|NOVA VIDA PLAN|ESPEDITO FRANC|RTC NEGOCIOS|ROSANA THAUMA|PAULO SERGIO OLIVEIR/.test(n) && /ALUGUEL|ALG |CAUCAO/.test(h)) return 'Aluguel de Imóveis';
+  if (/ALUGUEL|ALG REFERENTE|CAUCAO|CAUCOES|LOCACAO DE IMOVEL|LOCACAO DE ESPACO|LOCACAO DE ESCRITORIO/.test(h)) return 'Aluguel de Imóveis';
 
   // 14. EPI / Uniformes
   if (/JF SOLDAS E EPI|D NISSA UNIFORM|VALE SAFE/.test(n)) return 'EPI / Uniformes';
