@@ -187,6 +187,72 @@ tfoot td{background:#EAE7F5;padding:11px 14px;font-weight:700;border-top:2px sol
 .pag button:disabled{opacity:.4;cursor:default;}
 .pag span{font-size:11px;color:var(--cinza);}
 
+/* ── ACESSIBILIDADE — Seletor de Fonte ── */
+.btn-fonte-wrap{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:3px 4px;}
+.btn-fonte{background:none;border:none;border-radius:5px;color:rgba(255,255,255,.55);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;line-height:1;padding:3px 7px;transition:background .15s,color .15s;}
+.btn-fonte:hover{background:rgba(255,255,255,.12);color:#fff;}
+.btn-fonte.ativo{background:rgba(252,211,77,.25);color:#FCD34D;border-radius:5px;}
+.btn-fonte-lbl{font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.6px;margin-right:2px;font-family:'Barlow',sans-serif;}
+
+/* Nível 1 — Médio (+15%) */
+body.fonte-m{font-size:15px;}
+body.fonte-m table{font-size:13.5px;}
+body.fonte-m thead th{font-size:11.5px;}
+body.fonte-m td{padding:10px 14px;}
+body.fonte-m td.r{font-size:14px;}
+body.fonte-m td.hist,body.fonte-m td.dt{font-size:12.5px;}
+body.fonte-m .kpi-card-lbl,body.fonte-m .kpi-tc-lbl{font-size:11.5px;}
+body.fonte-m .kpi-card-val{font-size:42px;}
+body.fonte-m .kpi-tc-val{font-size:44px;}
+body.fonte-m .kpi-tag,body.fonte-m .kpi-tc-tag{font-size:11.5px;padding:4px 12px;}
+body.fonte-m .status-bar{font-size:14px;}
+body.fonte-m nav button{font-size:13px;padding:12px 20px;}
+body.fonte-m .f-lbl{font-size:11.5px;}
+body.fonte-m .f-sel,.fonte-m .search-input{font-size:13.5px;}
+body.fonte-m .card-titulo,.fonte-m .tbl-titulo{font-size:16px;}
+body.fonte-m .card-sub,.fonte-m .tbl-sub{font-size:12.5px;}
+body.fonte-m .badge strong{font-size:14px;}
+body.fonte-m .badge span{font-size:10.5px;}
+body.fonte-m .pag button,.fonte-m .pag span{font-size:12.5px;}
+body.fonte-m .tfoot-lbl{font-size:13.5px;}
+body.fonte-m .tfoot-val{font-size:18px;}
+body.fonte-m .kpi-hero-title{font-size:15px;}
+body.fonte-m .kpi-hero-sub{font-size:12.5px;}
+body.fonte-m .mes-val{font-size:17px;}
+body.fonte-m .mes-nome,.fonte-m .mes-fat,.fonte-m .mes-pct{font-size:11.5px;}
+body.fonte-m .cat{font-size:11.5px;padding:3px 9px;}
+body.fonte-m .leg-list li{font-size:12.5px;}
+
+/* Nível 2 — Grande (+33%) */
+body.fonte-g{font-size:17px;}
+body.fonte-g table{font-size:15px;}
+body.fonte-g thead th{font-size:13px;}
+body.fonte-g td{padding:12px 14px;}
+body.fonte-g td.r{font-size:16px;}
+body.fonte-g td.hist,body.fonte-g td.dt{font-size:14px;}
+body.fonte-g .kpi-card-lbl,body.fonte-g .kpi-tc-lbl{font-size:13px;}
+body.fonte-g .kpi-card-val{font-size:46px;}
+body.fonte-g .kpi-tc-val{font-size:48px;}
+body.fonte-g .kpi-tag,body.fonte-g .kpi-tc-tag{font-size:13px;padding:5px 14px;}
+body.fonte-g .status-bar{font-size:16px;padding:10px 28px;}
+body.fonte-g nav button{font-size:15px;padding:13px 22px;}
+body.fonte-g .f-lbl{font-size:13px;}
+body.fonte-g .f-sel,.fonte-g .search-input{font-size:15px;}
+body.fonte-g .card-titulo,.fonte-g .tbl-titulo{font-size:18px;}
+body.fonte-g .card-sub,.fonte-g .tbl-sub{font-size:14px;}
+body.fonte-g .badge strong{font-size:16px;}
+body.fonte-g .badge span{font-size:12px;}
+body.fonte-g .pag button,.fonte-g .pag span{font-size:14px;padding:5px 13px;}
+body.fonte-g .tfoot-lbl{font-size:15px;}
+body.fonte-g .tfoot-val{font-size:21px;}
+body.fonte-g .kpi-hero-title{font-size:17px;}
+body.fonte-g .kpi-hero-sub{font-size:14px;}
+body.fonte-g .mes-val{font-size:19px;}
+body.fonte-g .mes-nome,.fonte-g .mes-fat,.fonte-g .mes-pct{font-size:13px;}
+body.fonte-g .cat{font-size:13px;padding:4px 10px;}
+body.fonte-g .leg-list li{font-size:14px;}
+body.fonte-g .kpi-hero-hd{padding:20px 28px;}
+
 .empty{padding:40px;text-align:center;color:var(--cinza);}
 td.positivo{color:#16A34A;font-weight:700;}
 td.negativo{color:#DC2626;font-weight:700;}
@@ -216,6 +282,12 @@ td.neutro{color:var(--cinza);}
     <div class="badge"><span>Custo Total</span><strong id="hdr-total">—</strong></div>
     <div class="badge badge-verde"><span>Faturado Acumulado</span><strong>R$ 62.400.575</strong></div>
     <div class="badge"><span>Período</span><strong>Mai/25 – Abr/26</strong></div>
+    <div class="btn-fonte-wrap" title="Tamanho da fonte">
+      <span class="btn-fonte-lbl">Fonte</span>
+      <button class="btn-fonte" id="bf-n" onclick="setFonte(0)">A</button>
+      <button class="btn-fonte" id="bf-m" onclick="setFonte(1)">A+</button>
+      <button class="btn-fonte" id="bf-g" onclick="setFonte(2)">A++</button>
+    </div>
   </div>
 </header>
 
@@ -1183,6 +1255,24 @@ function pg(id,btn){
   document.getElementById('pg-'+id).classList.add('ativa');
   if(btn) btn.classList.add('ativo');
 }
+
+// ── Acessibilidade: tamanho de fonte ──────────────────────────────────────────
+const FONTE_CLASSES=['','fonte-m','fonte-g'];
+const FONTE_IDS=['bf-n','bf-m','bf-g'];
+function setFonte(nivel){
+  document.body.classList.remove('fonte-m','fonte-g');
+  if(FONTE_CLASSES[nivel]) document.body.classList.add(FONTE_CLASSES[nivel]);
+  FONTE_IDS.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('ativo',i===nivel);
+  });
+  try{localStorage.setItem('sp010-fonte',nivel);}catch(e){}
+}
+(function(){
+  const n=parseInt(localStorage.getItem('sp010-fonte')||'0');
+  if(n>0) setFonte(n);
+  else document.getElementById('bf-n').classList.add('ativo');
+})();
 </script>
 </body>
 </html>
