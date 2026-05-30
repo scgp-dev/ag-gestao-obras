@@ -446,8 +446,8 @@ td.neutro{color:var(--cinza);}
     <div class="table-card" style="margin-bottom:0">
       <div class="tbl-header">
         <div>
-          <div class="tbl-titulo">Composição do Custo</div>
-          <div class="tbl-sub">Participação por tipo de apropriação</div>
+          <div class="tbl-titulo">Curva ABC — Composição do Custo</div>
+          <div class="tbl-sub">Classe A ≤ 70% · Classe B 71–90% · Classe C &gt; 90%</div>
         </div>
       </div>
       <div class="tbl-wrap">
@@ -456,6 +456,8 @@ td.neutro{color:var(--cinza);}
             <th>Apropriação</th>
             <th class="r">Total (R$)</th>
             <th class="r">%</th>
+            <th class="r">% Acum.</th>
+            <th style="text-align:center">Classe</th>
           </tr></thead>
           <tbody id="tbody-comp"></tbody>
         </table>
@@ -1004,12 +1006,22 @@ function renderDiagnostico(){
   filtrados.forEach(r=>{ porCat[r.aprop]=(porCat[r.aprop]||0)+r.total; });
   const total=Object.values(porCat).reduce((s,v)=>s+v,0);
   const cats=Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('tbody-comp').innerHTML=cats.map(([cat,val])=>`
-    <tr>
+  let acumPct=0;
+  document.getElementById('tbody-comp').innerHTML=cats.map(([cat,val])=>{
+    const pct=total?(val/total*100):0;
+    acumPct+=pct;
+    const cl=acumPct<=70?'A':acumPct<=90?'B':'C';
+    const clStyle=cl==='A'?'background:#FEE2E2;color:#991B1B':
+                  cl==='B'?'background:#FEF9C3;color:#854D0E':
+                           'background:#DCFCE7;color:#166534';
+    return `<tr>
       <td><span class="cat ${CLS[cat]||'c17'}">${cat}</span></td>
       <td class="r">${R(val)}</td>
-      <td class="r" style="color:var(--cinza)">${total?(val/total*100).toFixed(1):0}%</td>
-    </tr>`).join('');
+      <td class="r" style="color:var(--cinza)">${pct.toFixed(1)}%</td>
+      <td class="r"><strong style="color:var(--g-esc)">${acumPct.toFixed(1)}%</strong></td>
+      <td style="text-align:center"><span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:800;letter-spacing:.6px;${clStyle}">${cl}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 function renderCategorias(){
