@@ -34,7 +34,7 @@ header{background:var(--g-esc);height:60px;display:flex;align-items:center;
 .badge-verde span{color:rgba(134,239,172,.7);}.badge-verde strong{color:#86EFAC;}
 
 .status-bar{background:var(--g-clr);border-bottom:1px solid var(--g-brd);
-  padding:5px 28px;font-size:10px;color:var(--g-pri);display:flex;justify-content:space-between;align-items:center;}
+  padding:7px 28px;font-size:13px;color:var(--g-pri);display:flex;justify-content:space-between;align-items:center;font-weight:500;}
 .dot-ok{display:inline-block;width:7px;height:7px;border-radius:50%;background:#16A34A;margin-right:5px;vertical-align:middle;}
 
 nav{background:var(--g-pri);padding:0 28px;display:flex;border-bottom:1px solid rgba(255,255,255,.08);}
@@ -151,6 +151,11 @@ td.dt{white-space:nowrap;color:var(--cinza);font-size:11px;}
 .bar-bg{background:var(--g-clr);border-radius:3px;height:5px;margin-top:3px;min-width:60px;}
 .bar-fg{background:var(--g-med);border-radius:3px;height:5px;}
 
+/* Total Extrato (tfoot) */
+tfoot td{background:#EAE7F5;padding:11px 14px;font-weight:700;border-top:2px solid var(--g-brd);}
+.tfoot-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--g-pri);}
+.tfoot-val{font-family:'Barlow Condensed',sans-serif;font-size:17px;color:var(--g-esc);text-align:right;}
+
 /* Paginação */
 .pag{padding:12px 20px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--borda);flex-wrap:wrap;}
 .pag button{background:none;border:1px solid var(--borda);border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;}
@@ -185,7 +190,7 @@ td.neutro{color:var(--cinza);}
     </div>
   </div>
   <div class="h-right">
-    <div class="badge"><span>Desembolso Total</span><strong id="hdr-total">—</strong></div>
+    <div class="badge"><span>Custo Total</span><strong id="hdr-total">—</strong></div>
     <div class="badge badge-verde"><span>Faturado Acumulado</span><strong>R$ 62.400.575</strong></div>
     <div class="badge"><span>Período</span><strong>Mai/25 – Abr/26</strong></div>
   </div>
@@ -193,7 +198,7 @@ td.neutro{color:var(--cinza);}
 
 <div class="status-bar">
   <div><span class="dot-ok"></span><span id="sb-txt">Carregando…</span></div>
-  <div style="font-size:10px;color:var(--cinza)">Faturamento: 9 NFs emitidas (Jun/25–Abr/26) · Acumulado R$ 62.400.574,98 · Fonte: NFs A.Gaspar × SIURB/PMSP</div>
+  <div style="font-size:13px;color:var(--cinza);font-weight:500">Atualizado: 30/04/2026 · 9 NFs emitidas · Acumulado R$ 62.400.574,98</div>
 </div>
 
 <nav>
@@ -225,14 +230,9 @@ td.neutro{color:var(--cinza);}
 
   <div class="kpi-grid">
     <div class="kpi">
-      <div class="kpi-lbl">Total Desembolsado</div>
+      <div class="kpi-lbl">Custo Total</div>
       <div class="kpi-val" id="kpi-tot">—</div>
       <div class="kpi-sub">Mai/25 – Abr/26 · acumulado</div>
-    </div>
-    <div class="kpi amarelo">
-      <div class="kpi-lbl">Último Mês (Abr/26)</div>
-      <div class="kpi-val" id="kpi-ult">—</div>
-      <div class="kpi-sub" id="kpi-ult-sub">—</div>
     </div>
     <div class="kpi verde">
       <div class="kpi-lbl">Faturado Acumulado</div>
@@ -244,24 +244,20 @@ td.neutro{color:var(--cinza);}
       <div class="kpi-val" id="kpi-saldo">—</div>
       <div class="kpi-sub" id="kpi-saldo-sub">—</div>
     </div>
-    <div class="kpi cinza">
-      <div class="kpi-lbl">N° de Baixas</div>
-      <div class="kpi-val" id="kpi-npag">—</div>
-      <div class="kpi-sub">Pagamentos no período</div>
-    </div>
   </div>
 
   <!-- Curva S -->
   <div class="chart-card" style="margin-bottom:16px;">
     <div class="card-header">
       <div>
-        <div class="card-titulo">Curva S — Desembolso × Faturamento</div>
-        <div class="card-sub">Barras: custo mensal · Linha laranja: custo acumulado · Linha verde: faturamento acumulado</div>
+        <div class="card-titulo">Curva S — Custo × Faturamento × Resultado</div>
+        <div class="card-sub">Barras: custo mensal · Laranja: custo acumulado · Verde: faturamento acumulado · Azul: resultado acumulado</div>
       </div>
       <div class="curva-legs">
         <div class="c-leg"><div class="c-dot bar" style="background:rgba(61,36,144,.7);"></div>Custo mensal</div>
         <div class="c-leg"><div class="c-dot" style="background:#F59E0B;"></div>Custo acumulado</div>
         <div class="c-leg"><div class="c-dot" style="background:#16A34A;"></div>Faturado acumulado</div>
+        <div class="c-leg"><div class="c-dot" style="background:#2563EB;border-style:dashed;"></div>Resultado acumulado</div>
       </div>
     </div>
     <div style="height:340px;"><canvas id="chCurva"></canvas></div>
@@ -282,7 +278,7 @@ td.neutro{color:var(--cinza);}
         <table>
           <thead><tr>
             <th>Mês</th>
-            <th class="r">Desembolso</th>
+            <th class="r">Custo</th>
             <th class="r">Faturado</th>
             <th class="r">Resultado</th>
             <th class="r">Result. Acum.</th>
@@ -413,6 +409,7 @@ td.neutro{color:var(--cinza);}
           <th>Histórico</th><th class="r">Valor (R$)</th><th class="r">Total Pago (R$)</th><th>Banco</th>
         </tr></thead>
         <tbody id="tbody-det"></tbody>
+        <tfoot id="tfoot-det"></tfoot>
       </table>
     </div>
     <div class="pag" id="paginacao"></div>
@@ -671,12 +668,6 @@ function renderSB(){
 
 function renderKPIs(tot){
   document.getElementById('kpi-tot').textContent=R(tot);
-  // Último mês com dados
-  const meses=[...new Set(filtrados.map(r=>r.mesAno))].sort(sortMes);
-  const ult=meses[meses.length-1]||'04/2026';
-  const vUlt=filtrados.filter(r=>r.mesAno===ult).reduce((s,r)=>s+r.total,0);
-  document.getElementById('kpi-ult').textContent=R(vUlt);
-  document.getElementById('kpi-ult-sub').textContent=lm(ult)+' · desembolsado';
   // Resultado = Faturado Acumulado − Custo Total (soma dinâmica das NFs)
   const fat=Object.values(FATURAMENTO).reduce((a,b)=>a+b,0);
   const resultado=fat-tot;
@@ -687,7 +678,6 @@ function renderKPIs(tot){
   elVal.style.color=resultado>=0?'#16A34A':'#DC2626';
   card.style.borderLeftColor=resultado>=0?'#16A34A':'#DC2626';
   elSub.textContent=resultado>=0?'Margem positiva no período':'Custo acima do faturamento';
-  document.getElementById('kpi-npag').textContent=filtrados.length.toLocaleString('pt-BR');
 }
 
 function renderCurva(){
@@ -706,6 +696,8 @@ function renderCurva(){
     acFat+=(FATURAMENTO[m]||0);
     return acFat;
   });
+  // Resultado acumulado = Faturado acumulado − Custo acumulado
+  const resultadoAcum=todosMeses.map((_,i)=>fatAcum[i]-custoAcum[i]);
 
   if(chCurva) chCurva.destroy();
   chCurva=new Chart(document.getElementById('chCurva').getContext('2d'),{
@@ -718,21 +710,28 @@ function renderCurva(){
           backgroundColor:'rgba(61,36,144,.65)',
           borderColor:'rgba(61,36,144,1)',
           borderWidth:1, borderRadius:3,
-          yAxisID:'y', order:3,
+          yAxisID:'y', order:4,
         },
         {
           type:'line', label:'Custo Acumulado (R$)',
           data:custoAcum,
           borderColor:'#F59E0B', backgroundColor:'rgba(245,158,11,.08)',
           borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#F59E0B',
-          fill:true, tension:.3, yAxisID:'y2', order:1,
+          fill:true, tension:.3, yAxisID:'y2', order:2,
         },
         {
           type:'line', label:'Faturado Acumulado (R$)',
           data:fatAcum,
           borderColor:'#16A34A', backgroundColor:'rgba(22,163,74,.06)',
           borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#16A34A',
-          fill:false, tension:.3, yAxisID:'y2', order:2,
+          fill:false, tension:.3, yAxisID:'y2', order:3,
+        },
+        {
+          type:'line', label:'Resultado Acumulado (R$)',
+          data:resultadoAcum,
+          borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,.07)',
+          borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#2563EB',
+          borderDash:[6,4], fill:true, tension:.3, yAxisID:'y2', order:1,
         },
       ]
     },
@@ -993,7 +992,7 @@ function renderDetalhado(){
   if(pgAtual>totPg) pgAtual=totPg;
   const soma=filtrados.reduce((s,r)=>s+r.total,0);
   document.getElementById('sub-det').textContent=
-    `${filtrados.length.toLocaleString('pt-BR')} registros · Total: ${R(soma)}`;
+    `${filtrados.length.toLocaleString('pt-BR')} registros selecionados`;
   const slice=filtrados.slice((pgAtual-1)*pp,pgAtual*pp);
   const tbody=document.getElementById('tbody-det');
   if(!slice.length){
@@ -1009,6 +1008,12 @@ function renderDetalhado(){
       <td style="color:var(--cinza);font-size:11px">${r.banco}</td>
     </tr>`).join('');
   }
+  document.getElementById('tfoot-det').innerHTML=`<tr>
+    <td colspan="4" class="tfoot-lbl">Total selecionado · ${filtrados.length.toLocaleString('pt-BR')} registros</td>
+    <td class="tfoot-val">${R(soma)}</td>
+    <td class="tfoot-val">${R(soma)}</td>
+    <td></td>
+  </tr>`;
   renderPag(totPg);
 }
 
