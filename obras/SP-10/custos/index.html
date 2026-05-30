@@ -421,9 +421,9 @@ td.neutro{color:var(--cinza);}
   <!-- Separador Diagnóstico -->
   <div class="diag-hd"><div class="diag-hd-line"></div><div class="diag-hd-lbl">Diagnóstico Mensal</div><div class="diag-hd-line"></div></div>
 
-  <div class="charts-2col" id="div-diagnostico">
+  <div id="div-diagnostico" style="display:flex;flex-direction:column;gap:16px;">
 
-    <!-- Tabela Custo × Faturado por Mês -->
+    <!-- Tabela Custo × Faturamento por Mês (compacta, largura total) -->
     <div class="table-card" style="margin-bottom:0">
       <div class="tbl-header">
         <div>
@@ -436,16 +436,16 @@ td.neutro{color:var(--cinza);}
           <thead><tr>
             <th>Mês</th>
             <th class="r">Custo</th>
-            <th class="r">Fat.</th>
-            <th class="r">Result.</th>
-            <th class="r">Acum.</th>
+            <th class="r">Faturado</th>
+            <th class="r">Resultado</th>
+            <th class="r">Result. Acumulado</th>
           </tr></thead>
           <tbody id="tbody-diag"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- Top Categorias -->
+    <!-- Curva ABC (largura total, todas as linhas visíveis) -->
     <div class="table-card" style="margin-bottom:0">
       <div class="tbl-header">
         <div>
