@@ -625,6 +625,29 @@ const DADOS_RAW = [{"nome":"CONSELHO REGIONAL DE","data":"14/08/2025","mesAno":"
 // Faturamento — MG-004 (sem medicoes emitidas ate Abr/2026)
 const FATURAMENTO = {};
 
+// CATEGORIAS DE APROPRIAÇÃO
+// =====================================================
+const CATS = [
+  { id:'Aço Estrutural',           cls:'c0'  },
+  { id:'Concreto',                 cls:'c1'  },
+  { id:'Fundação',                 cls:'c2'  },
+  { id:'Embarcações / Flutuantes', cls:'c3'  },
+  { id:'Equipamentos (Compra)',    cls:'c4'  },
+  { id:'Locação de Equipamentos',  cls:'c5'  },
+  { id:'Mão de Obra',       cls:'c6'  },
+  { id:'Encargos Trabalhistas',    cls:'c7'  },
+  { id:'Impostos e Retenções',     cls:'c8'  },
+  { id:'Consultoria e Projetos',   cls:'c9'  },
+  { id:'Combustíveis',             cls:'c10' },
+  { id:'Seguros',                  cls:'c11' },
+  { id:'Aluguel de Imóveis',       cls:'c12' },
+  { id:'EPI / Uniformes',          cls:'c13' },
+  { id:'Transporte e Logística',   cls:'c14' },
+  { id:'Prestação de Contas',      cls:'c15' },
+  { id:'Administrativo',           cls:'c16' },
+  { id:'Outros',                   cls:'c17' },
+  { id:'Locação de Veículos Leves',cls:'c18' },
+];
 const CLS = Object.fromEntries(CATS.map(c=>[c.id, c.cls]));
 const CORES = {
   'Aço Estrutural':           '#1D4ED8',
@@ -647,6 +670,8 @@ const CORES = {
   'Outros':                   '#9CA3AF',
   'Locação de Veículos Leves':'#0369A1',
 };
+
+const CLS = Object.fromEntries(CATS.map(c=>[c.id, c.cls]));
 
 function categorizar(r) {
   const h = (r.hist||'').toUpperCase();
