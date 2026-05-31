@@ -399,7 +399,7 @@ td.neutro{color:var(--cinza);}
 
 <div class="status-bar">
   <div><span class="dot-ok"></span><span id="sb-txt">Carregando…</span></div>
-  <div style="font-size:13px;color:var(--cinza);font-weight:500">Atualizado: 30/04/2026 · Sem faturamento emitido · DER-MG</div>
+  <div style="font-size:13px;color:var(--cinza);font-weight:500">💰 Capital aportado pelo consórcio: <strong style="color:var(--g-pri)" id="sb-aporte">—</strong> <span style="opacity:.7">(financiamento, não é custo)</span> · DER-MG</div>
 </div>
 
 <nav>
@@ -739,6 +739,10 @@ function categorizar(r) {
   const n = (r.nome||'').toUpperCase();
   const hn = h + ' ' + n;
 
+  // 0. Aporte de Capital — obra de consórcio: injeção semanal de capital de giro
+  //    pelo consórcio para custear pagamentos. É FINANCIAMENTO, não custo de obra.
+  if (/CONSORCIO/.test(n) || /APORTE FINANCEIRO/.test(h)) return 'Aporte de Capital';
+
   // 1. Aço / Fundação — Gerdau e ArcelorMittal
   if (/ARCELORMITTAL/.test(n) && /BOBINA/.test(h)) return 'Fundação';
   if (/CALTUBOS/.test(n)) return 'Fundação';
@@ -837,7 +841,11 @@ function categorizar(r) {
 }
 
 // Pré-processar dados
-const DADOS = DADOS_RAW.map(r => ({...r, aprop: categorizar(r)}));
+const _DADOS_TODOS = DADOS_RAW.map(r => ({...r, aprop: categorizar(r)}));
+// Aportes de capital (consórcio) são segregados — NÃO entram no custo da obra
+const APORTES = _DADOS_TODOS.filter(r => r.aprop === 'Aporte de Capital');
+const TOTAL_APORTES = APORTES.reduce((s,r)=>s+r.total,0);
+const DADOS = _DADOS_TODOS.filter(r => r.aprop !== 'Aporte de Capital');
 
 // Helpers de formato
 const R = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -921,7 +929,9 @@ function renderTudo(){
 function renderSB(){
   const n=filtrados.length, tot=filtrados.reduce((s,r)=>s+r.total,0);
   document.getElementById('sb-txt').textContent=
-    `${n.toLocaleString('pt-BR')} baixas · Custo filtrado: ${R(tot)}`;
+    `${n.toLocaleString('pt-BR')} baixas · Custo real executado: ${R(tot)}`;
+  const ea=document.getElementById('sb-aporte');
+  if(ea) ea.textContent=R(TOTAL_APORTES);
 }
 
 function renderKPIs(tot){
