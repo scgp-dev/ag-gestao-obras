@@ -164,6 +164,7 @@ td.dt{white-space:nowrap;color:var(--cinza);font-size:11px;}
 .c16{background:#F1F5F9;color:#475569;}  /* Administrativo */
 .c17{background:#F9FAFB;color:#6B7280;}  /* Outros */
 .c18{background:#E0F2FE;color:#0369A1;}  /* Locação Veículos Leves */
+.c19{background:#CCFBF1;color:#0F766E;}  /* Aporte ao Consórcio */
 
 /* Ranking */
 .rank-n{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--g-brd);text-align:center;width:40px;}
@@ -399,7 +400,7 @@ td.neutro{color:var(--cinza);}
 
 <div class="status-bar">
   <div><span class="dot-ok"></span><span id="sb-txt">Carregando…</span></div>
-  <div style="font-size:13px;color:var(--cinza);font-weight:500">💰 Capital aportado pelo consórcio: <strong style="color:var(--g-pri)" id="sb-aporte">—</strong> <span style="opacity:.7">(financiamento, não é custo)</span> · DER-MG</div>
+  <div style="font-size:13px;color:var(--cinza);font-weight:500">Inclui <strong style="color:var(--g-pri)">Aporte ao Consórcio</strong> (cota Gaspar 50%): <strong style="color:var(--g-pri)" id="sb-aporte">—</strong> · DER-MG</div>
 </div>
 
 <nav>
@@ -710,6 +711,7 @@ const CATS = [
   { id:'Administrativo',           cls:'c16' },
   { id:'Outros',                   cls:'c17' },
   { id:'Locação de Veículos Leves',cls:'c18' },
+  { id:'Aporte ao Consórcio',      cls:'c19' },
 ];
 const CLS = Object.fromEntries(CATS.map(c=>[c.id, c.cls]));
 const CORES = {
@@ -732,6 +734,7 @@ const CORES = {
   'Administrativo':           '#475569',
   'Outros':                   '#9CA3AF',
   'Locação de Veículos Leves':'#0369A1',
+  'Aporte ao Consórcio':      '#0F766E',
 };
 
 function categorizar(r) {
@@ -739,9 +742,11 @@ function categorizar(r) {
   const n = (r.nome||'').toUpperCase();
   const hn = h + ' ' + n;
 
-  // 0. Aporte de Capital — obra de consórcio: injeção semanal de capital de giro
-  //    pelo consórcio para custear pagamentos. É FINANCIAMENTO, não custo de obra.
-  if (/CONSORCIO/.test(n) || /APORTE FINANCEIRO/.test(h)) return 'Aporte de Capital';
+  // 0. Aporte ao Consórcio — obra 50/50: cota da Gaspar nos pagamentos semanais de
+  //    construção (transfere 50% das faturas da semana ao consórcio). É CUSTO.
+  //    ⚠️ Quando as NFs de construção forem 100% lançadas no TOTVS, trocar o modelo
+  //    (contar NFs e tratar aporte como tesouraria) para não duplicar. Cota = 50%.
+  if (/CONSORCIO/.test(n) || /APORTE FINANCEIRO/.test(h)) return 'Aporte ao Consórcio';
 
   // 1. Aço / Fundação — Gerdau e ArcelorMittal
   if (/ARCELORMITTAL/.test(n) && /BOBINA/.test(h)) return 'Fundação';
@@ -841,11 +846,9 @@ function categorizar(r) {
 }
 
 // Pré-processar dados
-const _DADOS_TODOS = DADOS_RAW.map(r => ({...r, aprop: categorizar(r)}));
-// Aportes de capital (consórcio) são segregados — NÃO entram no custo da obra
-const APORTES = _DADOS_TODOS.filter(r => r.aprop === 'Aporte de Capital');
-const TOTAL_APORTES = APORTES.reduce((s,r)=>s+r.total,0);
-const DADOS = _DADOS_TODOS.filter(r => r.aprop !== 'Aporte de Capital');
+const DADOS = DADOS_RAW.map(r => ({...r, aprop: categorizar(r)}));
+// Aporte ao Consórcio é CUSTO (cota Gaspar 50%); guardamos o total para exibição
+const TOTAL_APORTES = DADOS.filter(r => r.aprop === 'Aporte ao Consórcio').reduce((s,r)=>s+r.total,0);
 
 // Helpers de formato
 const R = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
