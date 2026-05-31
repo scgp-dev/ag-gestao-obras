@@ -14,67 +14,114 @@ Sistema de painéis de gestão de obras da **Construtora A. Gaspar S.A.** hosped
 
 ```
 /
-├── index.html                        ← Portal raiz A. Gaspar (lista obras)
+├── index.html                        ← Portal raiz A. Gaspar (mapa Leaflet + lista obras)
 ├── ponte_preview.html                ← Preview da ponte (asset estático)
-├── .gitignore                        ← Exclui *.xlsx, dados.json, custos_template.html
+├── .gitignore                        ← Exclui *.xlsx, dados.json, custos_template.html, PDFs
 ├── CLAUDE.md                         ← Este arquivo
-├── DOCUMENTACAO.md                   ← Documentação para o desenvolvedor
+├── DOCUMENTACAO.md                   ← Documentação técnica para o desenvolvedor
 │
 └── obras/
     ├── SP-10/                        ← Ponte Graúna-Gaivotas (SIURB/PMSP)
     │   ├── index.html                ← Portal SP-10 (links: Físico, Financeiro, Custos)
     │   ├── fisico.html               ← Painel de Avanço Físico
-    │   ├── financeiro.html           ← Painel Financeiro (Medições/SIURB)
+    │   ├── financeiro.html           ← Painel Financeiro (Medições/SIURB) — requer login Google
+    │   ├── kmz/Segmento_1.kmz        ← Traçado da obra (commitado)
     │   └── custos/
-    │       ├── index.html            ← Painel Financeiro de Custos ← ARQUIVO PRINCIPAL
-    │       └── dados.json            ← Fonte de dados (não commitado — ver .gitignore)
+    │       ├── index.html            ← Painel Financeiro de Custos ← ARQUIVO PRINCIPAL SP-10
+    │       └── dados.json            ← Fonte de dados (não commitado — .gitignore)
     │
-    └── MT-02/                        ← OAE 3 — Ponte do Rio Vermelho
+    ├── MG-04/                        ← Ponte sobre o Rio São Francisco (DER-MG)
+    │   ├── index.html                ← Portal MG-04 (só Custos por enquanto)
+    │   ├── kmz/Projeto Geometrico... ← Traçado da obra (commitado)
+    │   └── custos/
+    │       ├── index.html            ← Painel Financeiro de Custos MG-04
+    │       └── dados.json            ← Fonte de dados (não commitado)
+    │
+    └── MT-02/                        ← OAE 3 — Ponte do Rio Vermelho (RUMO S.A.)
         ├── index.html
         └── MT-002_Relatorio_Gerencial.html
 ```
 
 ---
 
-## Painel de Custos SP-010 — Arquivo Principal
+## Obras Cadastradas
 
-**Arquivo:** `obras/SP-10/custos/index.html` (~548 KB)
-
-O arquivo é **standalone** — os dados de 2.454 lançamentos (~479 KB de JSON) estão embutidos
-diretamente no HTML como `const DADOS_RAW = [...]`. Não depende de servidor nem de API.
-
-### Como Reconstruir Após Atualizar os Dados
-
-1. Exportar planilha Excel → `dados.json` (PowerShell via COM Object — ver DOCUMENTACAO.md)
-2. Ter o `custos_template.html` (arquivo de desenvolvimento, não commitado)
-3. Executar o PowerShell de build:
-   ```powershell
-   $tmpl = Get-Content "custos_template.html" -Raw -Encoding UTF8
-   $dados = Get-Content "dados.json" -Raw -Encoding UTF8
-   $out = $tmpl.Replace('%%DADOS_JSON%%', $dados)
-   [System.IO.File]::WriteAllText("index.html", $out, [System.Text.UTF8Encoding]::new($false))
-   ```
-4. Commitar e fazer push do `index.html`
-
-> **Atenção:** O `custos_template.html` está no `.gitignore` e deve ser mantido localmente.
-> Está em `C:\Users\Jailton Santos\ponte-grauna-painel\obras\SP-10\custos\`
+| Código | Obra | Cliente | Status | Contrato |
+|--------|------|---------|--------|----------|
+| SP-10 | Ponte Graúna-Gaivotas | SIURB/PMSP | Em execução | 029/SIURB/2025 — R$ 347,5 Mi |
+| MG-04 | Ponte sobre o Rio São Francisco | DER-MG | Em execução | Em elaboração |
+| MT-02 | OAE 3 — Rio Vermelho | RUMO S.A. | Concluída | LRV80/2023 — R$ 146 Mi |
 
 ---
 
-## Seções do Painel de Custos
+## Portal Raiz (index.html)
 
-| Aba | ID | Descrição |
-|-----|----|-----------|
-| Visão Geral | `pg-visao` | KPI hero, Curva S, diagnóstico mensal |
-| Apropriações | `pg-categorias` | Gráfico de barras + donut por categoria |
-| Fornecedores | `pg-fornecedores` | Ranking + gráficos top 15 |
-| Extrato | `pg-detalhado` | Tabela paginada, ordenável, com tfoot total |
+Usa **Leaflet.js** com mapa interativo (satélite/dark/streets). Cada obra tem:
+- Marcador no mapa exatamente nas coordenadas do KMZ
+- Painel lateral com info da obra e links para os painéis
+- Toggle para visualizar traçado KMZ na obra selecionada
+
+**Coordenadas das obras:**
+- SP-10: Lat -23.7227, Lng -46.6729
+- MG-04: Lat -14.7476, Lng -43.9339 (centro do KMZ)
+- MT-02: Lat -16.4706, Lng -54.6358
+
+Para adicionar nova obra: inserir novo objeto no array `OBRAS` em `index.html`.
 
 ---
 
-## Faturamento Embutido
+## Painel de Custos — Arquitetura
 
-Objeto `FATURAMENTO` no JS do index.html (~linha 587). Valores das 9 NFs emitidas:
+Cada painel (`obras/XX/custos/index.html`) é **standalone** — dados JSON embutidos diretamente no HTML.
+
+### Estrutura JavaScript obrigatória (ordem correta no arquivo):
+```
+1. const DADOS_RAW = [...JSON...];
+2. // Faturamento...
+   const FATURAMENTO = {...};  ← ou {} se sem faturamento
+3. // CATEGORIAS DE APROPRIAÇÃO
+   const CATS = [...];
+4. const CLS = Object.fromEntries(CATS.map(...));
+5. const CORES = {...};
+6. function categorizar(r) {...}
+7. const DADOS = DADOS_RAW.map(r => ({...r, aprop: categorizar(r)}));
+8. const LABEL_MES = {...};
+9. let filtros, pgAtual, filtrados, sortCol, sortDir, ...
+10. window.addEventListener('DOMContentLoaded', () => { aplicar(); });
+11. Funções: aplicar, limpar, renderTudo, renderSB, renderKPIs, renderCurva,
+             renderMeses, renderDiagnostico, renderCategorias, renderFornecedores,
+             renderDetalhado, sortBy, irPg, pg, setFonte, gerarPDF
+```
+
+> ⚠️ **Armadilha crítica ao adaptar painéis:** ao copiar SP-10 para nova obra,
+> o bloco entre `DADOS_RAW` e `CLS` (que contém FATURAMENTO + CATS + CORES)
+> pode ser perdido se o `IndexOf('};')` encontrar o fechamento errado.
+> Sempre verificar que `const CATS = [` e `const CORES = {` existem no arquivo destino.
+
+### Como Reconstruir o SP-10 Após Atualizar os Dados
+
+O `custos_template.html` (template de desenvolvimento, **não commitado**, `.gitignore`)
+está em `C:\Users\Jailton Santos\ponte-grauna-painel\obras\SP-10\custos\`.
+
+```powershell
+$tmpl  = Get-Content "custos_template.html" -Raw -Encoding UTF8
+$dados = Get-Content "dados.json" -Raw -Encoding UTF8
+$out   = $tmpl.Replace('%%DADOS_JSON%%', $dados)
+[System.IO.File]::WriteAllText("index.html", $out, [System.Text.UTF8Encoding]::new($false))
+```
+
+### Adaptar para nova obra (sem template)
+
+Ao derivar `index.html` de SP-10 para uma nova obra, usar PowerShell com substituição
+de string direta **sem** usar `IndexOf('};')` para encontrar fim do FATURAMENTO —
+esse método é frágil. Em vez disso, usar `IndexOf('const FATURAMENTO = {')` para
+localizar o bloco e `IndexOf('const CATS = [')` para verificar integridade.
+
+---
+
+## SP-010 — Faturamento Embutido
+
+Objeto `FATURAMENTO` no JS (~linha 590). 9 NFs emitidas:
 ```js
 const FATURAMENTO = {
   '06/2025': 945315.38,   // NFS 5869 — 1ª Med
@@ -87,45 +134,58 @@ const FATURAMENTO = {
   '03/2026': 10237937.56, // NFS 6126 — 8ª Med
   '04/2026': 11018518.57, // NFN 31   — 9ª Med
 };
-// Total acumulado faturado: R$ 62.400.574,98
+// Total: R$ 62.400.574,98
 ```
-Para atualizar: editar diretamente no `index.html` e commitar.
+
+MG-04 não tem faturamento ainda → `const FATURAMENTO = {};`
 
 ---
 
 ## Motor de Categorização (`categorizar`)
 
-Função JS (~linha 648) que classifica cada lançamento com base em `nome` (fornecedor)
-e `hist` (histórico). **Regras por ordem de prioridade:**
+Ordem de prioridade (qualquer alteração deve ser feita em ambos SP-10 e MG-04):
 
 1. **Aço Estrutural:** Gerdau/ArcelorMittal + VERGALHÃO/ARAME/PREGO
-2. **Fundação:** CALTUBOS (sempre); ArcelorMittal + BOBINA; Drilling; Poly Fund; MEMPS
-3. **Embarcações:** Gerdau/ArcelorMittal (tudo exceto vergalhão/arame/prego); D Correa Viana; Oceanorte
-4. **Equipamentos (Compra):** Convicta IND + C45/Silo/Betoneira; Villa Empreend; Luiz Monteiro
-5. **Locação de Equipamentos:** ~15 fornecedores específicos + keywords LOCACAO DE [equip]
-6. **Locação de Veículos Leves:** UNIDAS LOCADORA
-7. **Mão de Obra:** Folha, adiantamento, INSS folha, FGTS, VT, 13°, férias, rescisão, contrib. retributiva, TAR TRANSF SALÁRIOS, CONTRIB ADICIONAL SENAI
+2. **Fundação:** CALTUBOS; ArcelorMittal+BOBINA; Drilling; Poly Fund; MEMPS
+3. **Embarcações/Flutuantes:** Gerdau/ArcelorMittal (demais); D Correa; Oceanorte
+4. **Equipamentos (Compra):** Convicta IND+C45/Silo; Villa; Luiz Monteiro
+5. **Locação de Veículos Leves:** UNIDAS LOCADORA
+6. **Locação de Equipamentos:** ~15 fornecedores + LOCACAO DE [equip/caminhao/...]
+7. **Mão de Obra:** FOLHA, INSS FOLHA, FGTS, VT, 13°, férias, rescisão, contrib. retrib., TAR TRANSF SALARIO, CONTRIB ADICIONAL SENAI
 8. **Encargos Trabalhistas:** Unimed, Sul América, Humana, Pluxee, Jovem Aprendiz
-9. **Impostos e Retenções:** Governo, Receita, INSS retido, ISS, IRRF
-10. **Consultoria e Projetos:** ~12 fornecedores (Multiplano, Enescil, BFA, etc.)
-11. **Combustíveis:** TICKLOG, Raizen, Vibra, ICP (DIESEL no histórico → Outros)
+9. **Impostos e Retenções:** Governo, Receita, ISS, IRRF, INSS retido
+10. **Consultoria e Projetos:** Multiplano, Enescil, BFA, Pilares, etc.
+11. **Combustíveis:** TICKLOG, Raizen, Vibra, ICP (DIESEL → Outros)
 12. **Seguros:** AVLA, Sul América Seguros
-13. **Aluguel de Imóveis:** Espedito, Anasilda, NEC, RTC, Romildo + ALG/ALUGUEL/CAUCAO
+13. **Aluguel de Imóveis:** Espedito, NEC, RTC + ALUGUEL/ALG REFERENTE/CAUCAO
 14. **EPI / Uniformes:** JF Soldas, D Nissa, Vale Safe, Epiflex
 15. **Transporte e Logística:** ~10 transportadoras
-16. **Prestação de Contas:** Bruno Barbosa e outros (histórico PRESTACAO DE CONTAS)
-17. **Administrativo:** Bancos, Telecom, TOTVS, MRV/LMA/TOTAL PTA, Passagens, etc.
-18. **Outros:** Tudo que não se enquadra
+16. **Prestação de Contas:** Bruno Barbosa + PRESTACAO DE CONTAS no hist
+17. **Administrativo:** Bancos, Telecom, TOTVS, MRV/LMA/TOTAL PTA, Passagens
+18. **Outros:** fallback
 
 ---
 
-## Identidade Visual (obrigatório em todos os painéis)
+## Funcionalidades Implementadas (ambos os painéis)
+
+- KPI Hero Block: Custo Total, Faturamento, Resultado com ícones SVG dinâmicos
+- Curva S: barras (custo mensal) + 3 linhas (custo acum., fat. acum., resultado acum.)
+- Diagnóstico Mensal: tabela custo × faturado × resultado (bugs corrigidos: meses sem medição e sinal acumulado)
+- Curva ABC: composição do custo com % acumulado e classificação A/B/C
+- Extrato: tabela paginada com **ordenação clicável** por Data/Fornecedor/Valor/Total
+- Seletor de fonte: A / A+ / A++ com persistência localStorage
+- Gerador de PDF: `window.print()` com layout dedicado, captura Curva S como imagem
+- Filtros globais: mês, categoria, busca livre
+
+---
+
+## Identidade Visual
 
 ```css
---g-esc: #1A0D4A   /* azul muito escuro — headers, fundos */
---g-pri: #28156E   /* azul A. Gaspar — nav, botões primários */
---g-med: #3D2490   /* azul médio — sub-headers, destaques */
---g-clr: #EAE7F5   /* lilás claro — backgrounds de card */
+--g-esc: #1A0D4A   /* azul muito escuro — headers */
+--g-pri: #28156E   /* azul A. Gaspar — nav, botões */
+--g-med: #3D2490   /* azul médio — destaques */
+--g-clr: #EAE7F5   /* lilás claro — cards */
 --g-brd: #C5BDE8   /* lilás borda */
 ```
 Fontes: **Barlow + Barlow Condensed** (Google Fonts)
@@ -135,15 +195,10 @@ Fontes: **Barlow + Barlow Condensed** (Google Fonts)
 ## Deploy
 
 ```powershell
-git add obras/SP-10/custos/index.html
+git add obras/SP-10/custos/index.html   # ou outro arquivo alterado
 git commit -m "Mensagem descritiva"
 git push origin main
+# GitHub Pages deploya em ~1-2 min
 ```
-GitHub Pages faz deploy automático em ~1-2 min após o push no branch `main`.
 
----
-
-## Acessibilidade
-
-Seletor de fonte no header (A / A+ / A++). Classes: `fonte-m` (médio) e `fonte-g` (grande)
-aplicadas ao `<body>`. Persistência via `localStorage` (chave: `sp010-fonte`).
+Remote: `https://github.com/scgp-dev/ag-gestao-obras.git`
