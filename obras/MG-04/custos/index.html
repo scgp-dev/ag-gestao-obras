@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Painel Financeiro — MG-004 · Construtora A. Gaspar</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --g-esc:#1A0D4A;--g-pri:#28156E;--g-med:#3D2490;--g-clr:#EAE7F5;--g-brd:#C5BDE8;
+  --verde:#166534;--vd-clr:#DCFCE7;
+  --vermelho:#991B1B;--vm-clr:#FEE2E2;
+  --cinza:#64748B;--borda:#E2E8F0;--branco:#FFFFFF;--fundo:#F5F4FB;
+  --sombra:0 1px 3px rgba(15,13,26,.07);--sombra-md:0 4px 16px rgba(40,21,110,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--fundo);color:#0F0D1A;min-height:100vh;}
+
+header{background:var(--g-esc);height:60px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 12px rgba(0,0,0,.35);}
+.logo-box{background:var(--branco);border-radius:6px;padding:5px 12px;display:flex;align-items:center;}
+.logo-txt{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--g-pri);}
+.h-titulo{margin-left:14px;}
+.h-titulo h1{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--branco);letter-spacing:.5px;}
+.h-titulo p{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;}
+.h-right{display:flex;align-items:center;gap:12px;}
+.badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  border-radius:6px;padding:5px 14px;text-align:center;}
+.badge span{display:block;font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;}
+.badge strong{font-size:13px;color:var(--branco);font-weight:600;}
+.badge-verde{background:rgba(22,101,52,.3);border-color:rgba(134,239,172,.3);}
+.badge-verde span{color:rgba(134,239,172,.7);}.badge-verde strong{color:#86EFAC;}
+
+.status-bar{background:var(--g-clr);border-bottom:1px solid var(--g-brd);
+  padding:7px 28px;font-size:13px;color:var(--g-pri);display:flex;justify-content:space-between;align-items:center;font-weight:500;}
+.dot-ok{display:inline-block;width:7px;height:7px;border-radius:50%;background:#16A34A;margin-right:5px;vertical-align:middle;}
+
+nav{background:var(--g-pri);padding:0 28px;display:flex;border-bottom:1px solid rgba(255,255,255,.08);}
+nav button{background:none;border:none;color:rgba(255,255,255,.55);font-family:'Barlow',sans-serif;
+  font-size:12px;font-weight:500;padding:11px 18px;cursor:pointer;
+  border-bottom:3px solid transparent;transition:all .2s;}
+nav button:hover{color:rgba(255,255,255,.85);}
+nav button.ativo{color:var(--branco);border-bottom-color:#FCD34D;font-weight:600;}
+
+.filtros-bar{background:var(--branco);border-bottom:1px solid var(--borda);
+  padding:10px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.f-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--cinza);}
+.f-sel{font-family:'Barlow',sans-serif;font-size:12px;border:1px solid var(--borda);
+  border-radius:6px;padding:5px 10px;background:var(--fundo);cursor:pointer;}
+.f-sel:focus{outline:none;border-color:var(--g-pri);}
+.search-wrap{position:relative;}
+.search-input{font-family:'Barlow',sans-serif;font-size:12px;border:1px solid var(--borda);
+  border-radius:6px;padding:5px 10px 5px 28px;background:var(--fundo);width:240px;}
+.search-input:focus{outline:none;border-color:var(--g-pri);}
+.s-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--cinza);pointer-events:none;}
+.f-limpar{font-size:11px;color:var(--g-pri);cursor:pointer;text-decoration:underline;margin-left:auto;font-weight:500;}
+
+main{padding:20px 28px;max-width:1920px;margin:0 auto;}
+.pagina{display:none;}.pagina.ativa{display:block;}
+
+/* ── KPI HERO BLOCK ── */
+.kpi-hero{background:var(--branco);border-radius:14px;box-shadow:0 4px 32px rgba(40,21,110,.13);margin-bottom:22px;overflow:hidden;}
+.kpi-hero-hd{background:linear-gradient(120deg,#1A0D4A 0%,#3D2490 100%);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.kpi-hero-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;letter-spacing:1.2px;text-transform:uppercase;}
+.kpi-hero-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;}
+.kpi-hero-tag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 16px;font-size:11px;color:rgba(255,255,255,.75);white-space:nowrap;font-weight:500;}
+.kpi-row{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;}
+.kpi-sep{background:var(--borda);margin:20px 0;}
+.kpi-card{padding:28px 36px;display:flex;flex-direction:column;}
+.kpi-card-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.kpi-ibox{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .3s;}
+.kpi-ibox.custo{background:#EAE7F5;}.kpi-ibox.fat{background:#DCFCE7;}.kpi-ibox.res{background:#FEF9C3;}
+.kpi-card-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--cinza);line-height:1.4;}
+.kpi-card-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:700;color:var(--g-esc);line-height:1;margin-bottom:16px;transition:color .3s;}
+.kpi-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;}
+.kpi-tag{background:var(--fundo);border:1px solid var(--borda);border-radius:20px;padding:3px 11px;font-size:10px;font-weight:600;color:var(--cinza);white-space:nowrap;}
+.kpi-tag.info{background:#EAE7F5;border-color:var(--g-brd);color:var(--g-pri);}
+.kpi-tag.ok{background:#DCFCE7;border-color:#86EFAC;color:#166534;}
+.kpi-tag.alerta{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B;}
+/* seção diagnóstico */
+.diag-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.diag-hd-line{flex:1;height:1px;background:var(--borda);}
+.diag-hd-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--cinza);white-space:nowrap;}
+
+/* Cards */
+.chart-card{background:var(--branco);border-radius:10px;padding:20px;box-shadow:var(--sombra);}
+.charts-2col{display:grid;grid-template-columns:1fr 420px;gap:16px;margin-bottom:16px;align-items:start;}
+.tbl-compact td{padding:5px 10px;font-size:11px;}
+.tbl-compact td.r{font-size:11px;padding:5px 10px;}
+.tbl-compact thead th{padding:6px 10px;font-size:9.5px;}
+.card-titulo{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--g-esc);}
+.card-sub{font-size:11px;color:var(--cinza);margin-top:1px;}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.card-badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--g-clr);color:var(--g-pri);}
+
+/* Legenda Curva S */
+.curva-legs{display:flex;gap:16px;flex-wrap:wrap;}
+.c-leg{display:flex;align-items:center;gap:6px;font-size:11px;color:#374151;}
+.c-dot{width:28px;height:4px;border-radius:2px;flex-shrink:0;}
+.c-dot.bar{width:14px;height:14px;border-radius:3px;}
+
+/* Donut */
+.donut-wrap{position:relative;width:180px;height:180px;margin:0 auto 10px;}
+.donut-centro{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.donut-centro strong{font-family:'Barlow Condensed',sans-serif;font-size:18px;color:var(--g-esc);display:block;line-height:1.2;}
+.donut-centro span{font-size:9px;color:var(--cinza);}
+.leg-list{list-style:none;}
+.leg-list li{display:flex;align-items:center;padding:4px 0;border-bottom:1px solid var(--borda);font-size:11px;}
+.leg-list li:last-child{border-bottom:none;}
+.leg-cor{width:10px;height:10px;border-radius:2px;margin-right:7px;flex-shrink:0;}
+.leg-nome{flex:1;color:#374151;}
+.leg-val{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;color:var(--g-esc);}
+.leg-pct{font-size:10px;color:var(--cinza);margin-left:5px;min-width:32px;text-align:right;}
+
+/* Grid meses */
+.mes-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;}
+.mes-card{background:var(--branco);border-radius:8px;padding:12px 14px;box-shadow:var(--sombra);border-top:3px solid var(--g-pri);text-align:center;}
+.mes-card.atual{border-top-color:#F59E0B;background:#FFFBEB;}
+.mes-nome{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--cinza);}
+.mes-val{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--g-esc);margin-top:4px;}
+.mes-fat{font-size:10px;color:var(--verde);margin-top:2px;font-weight:600;}
+.mes-pct{font-size:10px;color:var(--cinza);margin-top:1px;}
+
+/* Tabelas */
+.table-card{background:var(--branco);border-radius:10px;box-shadow:var(--sombra);margin-bottom:20px;overflow:hidden;}
+.tbl-header{padding:14px 20px;border-bottom:1px solid var(--borda);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.tbl-titulo{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--g-esc);}
+.tbl-sub{font-size:11px;color:var(--cinza);margin-top:1px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{background:#F8F7FD;padding:9px 14px;text-align:left;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.7px;color:var(--cinza);border-bottom:2px solid var(--borda);white-space:nowrap;}
+thead th.r{text-align:right;}
+tbody tr{border-bottom:1px solid var(--borda);transition:background .1s;}
+tbody tr:hover{background:#F8F7FD;}
+tbody tr:last-child{border-bottom:none;}
+td{padding:8px 14px;color:#374151;vertical-align:middle;}
+td.r{text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--g-esc);}
+td.forn{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+td.hist{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--cinza);font-size:11px;}
+td.dt{white-space:nowrap;color:var(--cinza);font-size:11px;}
+
+/* Badges categoria */
+.cat{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.2px;white-space:nowrap;}
+.c0{background:#EFF6FF;color:#1D4ED8;}   /* Aço */
+.c1{background:#F0FDF4;color:#15803D;}   /* Concreto */
+.c2{background:#FFF7ED;color:#C2410C;}   /* Fundação */
+.c3{background:#F0F9FF;color:#0369A1;}   /* Embarcações */
+.c4{background:#FDF4FF;color:#7E22CE;}   /* Equip Compra */
+.c5{background:#ECFDF5;color:#065F46;}   /* Locação Equip */
+.c6{background:#FEF9C3;color:#854D0E;}   /* Mão de Obra */
+.c7{background:#FFF1F2;color:#BE123C;}   /* Encargos */
+.c8{background:#F5F3FF;color:#6D28D9;}   /* Impostos */
+.c9{background:#EEF2FF;color:#3730A3;}   /* Consultoria */
+.c10{background:#FEF2F2;color:#B91C1C;}  /* Combustível */
+.c11{background:#F0FDF4;color:#166534;}  /* Seguros */
+.c12{background:#FFFBEB;color:#92400E;}  /* Aluguel Imóvel */
+.c13{background:#F8FAFC;color:#334155;}  /* EPI/Uniforme */
+.c14{background:#F9FAFB;color:#374151;}  /* Transporte */
+.c15{background:#FDF4FF;color:#86198F;}  /* Prestação Contas */
+.c16{background:#F1F5F9;color:#475569;}  /* Administrativo */
+.c17{background:#F9FAFB;color:#6B7280;}  /* Outros */
+.c18{background:#E0F2FE;color:#0369A1;}  /* Locação Veículos Leves */
+
+/* Ranking */
+.rank-n{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--g-brd);text-align:center;width:40px;}
+.r1{color:#D97706;}.r2{color:#94A3B8;}.r3{color:#92400E;}
+.bar-bg{background:var(--g-clr);border-radius:3px;height:5px;margin-top:3px;min-width:60px;}
+.bar-fg{background:var(--g-med);border-radius:3px;height:5px;}
+
+/* Ordenação Extrato */
+thead th.srt{cursor:pointer;user-select:none;white-space:nowrap;}
+thead th.srt:hover{background:#EDE9F8;color:var(--g-pri);}
+thead th.srt.ativo{background:#EAE7F5;color:var(--g-pri);}
+.srt-ic{font-size:9px;margin-left:2px;opacity:.4;}
+.srt-ic.on{opacity:1;}
+
+/* Total Extrato (tfoot) */
+tfoot td{background:#EAE7F5;padding:11px 14px;font-weight:700;border-top:2px solid var(--g-brd);}
+.tfoot-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--g-pri);}
+.tfoot-val{font-family:'Barlow Condensed',sans-serif;font-size:17px;color:var(--g-esc);text-align:right;}
+
+/* Paginação */
+.pag{padding:12px 20px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--borda);flex-wrap:wrap;}
+.pag button{background:none;border:1px solid var(--borda);border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;}
+.pag button:hover{border-color:var(--g-pri);color:var(--g-pri);}
+.pag button.ap{background:var(--g-pri);color:#fff;border-color:var(--g-pri);}
+.pag button:disabled{opacity:.4;cursor:default;}
+.pag span{font-size:11px;color:var(--cinza);}
+
+/* ── ACESSIBILIDADE — Seletor de Fonte ── */
+.btn-fonte-wrap{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:3px 4px;}
+.btn-fonte{background:none;border:none;border-radius:5px;color:rgba(255,255,255,.55);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;line-height:1;padding:3px 7px;transition:background .15s,color .15s;}
+.btn-fonte:hover{background:rgba(255,255,255,.12);color:#fff;}
+.btn-fonte.ativo{background:rgba(252,211,77,.25);color:#FCD34D;border-radius:5px;}
+.btn-fonte-lbl{font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.6px;margin-right:2px;font-family:'Barlow',sans-serif;}
+
+/* Nível 1 — Médio (+15%) */
+body.fonte-m{font-size:15px;}
+body.fonte-m table{font-size:13.5px;}
+body.fonte-m thead th{font-size:11.5px;}
+body.fonte-m td{padding:10px 14px;}
+body.fonte-m td.r{font-size:14px;}
+body.fonte-m td.hist,body.fonte-m td.dt{font-size:12.5px;}
+body.fonte-m .kpi-card-lbl,body.fonte-m .kpi-tc-lbl{font-size:11.5px;}
+body.fonte-m .kpi-card-val{font-size:42px;}
+body.fonte-m .kpi-tc-val{font-size:44px;}
+body.fonte-m .kpi-tag,body.fonte-m .kpi-tc-tag{font-size:11.5px;padding:4px 12px;}
+body.fonte-m .status-bar{font-size:14px;}
+body.fonte-m nav button{font-size:13px;padding:12px 20px;}
+body.fonte-m .f-lbl{font-size:11.5px;}
+body.fonte-m .f-sel,.fonte-m .search-input{font-size:13.5px;}
+body.fonte-m .card-titulo,.fonte-m .tbl-titulo{font-size:16px;}
+body.fonte-m .card-sub,.fonte-m .tbl-sub{font-size:12.5px;}
+body.fonte-m .badge strong{font-size:14px;}
+body.fonte-m .badge span{font-size:10.5px;}
+body.fonte-m .pag button,.fonte-m .pag span{font-size:12.5px;}
+body.fonte-m .tfoot-lbl{font-size:13.5px;}
+body.fonte-m .tfoot-val{font-size:18px;}
+body.fonte-m .kpi-hero-title{font-size:15px;}
+body.fonte-m .kpi-hero-sub{font-size:12.5px;}
+body.fonte-m .mes-val{font-size:17px;}
+body.fonte-m .mes-nome,.fonte-m .mes-fat,.fonte-m .mes-pct{font-size:11.5px;}
+body.fonte-m .cat{font-size:11.5px;padding:3px 9px;}
+body.fonte-m .leg-list li{font-size:12.5px;}
+
+/* Nível 2 — Grande (+33%) */
+body.fonte-g{font-size:17px;}
+body.fonte-g table{font-size:15px;}
+body.fonte-g thead th{font-size:13px;}
+body.fonte-g td{padding:12px 14px;}
+body.fonte-g td.r{font-size:16px;}
+body.fonte-g td.hist,body.fonte-g td.dt{font-size:14px;}
+body.fonte-g .kpi-card-lbl,body.fonte-g .kpi-tc-lbl{font-size:13px;}
+body.fonte-g .kpi-card-val{font-size:46px;}
+body.fonte-g .kpi-tc-val{font-size:48px;}
+body.fonte-g .kpi-tag,body.fonte-g .kpi-tc-tag{font-size:13px;padding:5px 14px;}
+body.fonte-g .status-bar{font-size:16px;padding:10px 28px;}
+body.fonte-g nav button{font-size:15px;padding:13px 22px;}
+body.fonte-g .f-lbl{font-size:13px;}
+body.fonte-g .f-sel,.fonte-g .search-input{font-size:15px;}
+body.fonte-g .card-titulo,.fonte-g .tbl-titulo{font-size:18px;}
+body.fonte-g .card-sub,.fonte-g .tbl-sub{font-size:14px;}
+body.fonte-g .badge strong{font-size:16px;}
+body.fonte-g .badge span{font-size:12px;}
+body.fonte-g .pag button,.fonte-g .pag span{font-size:14px;padding:5px 13px;}
+body.fonte-g .tfoot-lbl{font-size:15px;}
+body.fonte-g .tfoot-val{font-size:21px;}
+body.fonte-g .kpi-hero-title{font-size:17px;}
+body.fonte-g .kpi-hero-sub{font-size:14px;}
+body.fonte-g .mes-val{font-size:19px;}
+body.fonte-g .mes-nome,.fonte-g .mes-fat,.fonte-g .mes-pct{font-size:13px;}
+body.fonte-g .cat{font-size:13px;padding:4px 10px;}
+body.fonte-g .leg-list li{font-size:14px;}
+body.fonte-g .kpi-hero-hd{padding:20px 28px;}
+
+.empty{padding:40px;text-align:center;color:var(--cinza);}
+td.positivo{color:#16A34A;font-weight:700;}
+td.negativo{color:#DC2626;font-weight:700;}
+
+/* ── BOTÃO PDF ── */
+.btn-pdf{background:rgba(252,211,77,.18);border:1px solid rgba(252,211,77,.4);border-radius:7px;
+  padding:5px 13px;color:#FCD34D;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;white-space:nowrap;}
+.btn-pdf:hover{background:rgba(252,211,77,.32);}
+.btn-pdf:disabled{opacity:.5;cursor:default;}
+
+/* ── RELATÓRIO PARA IMPRESSÃO ── */
+#print-report{display:none;}
+.rpt-hd{background:#1A0D4A;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;}
+.rpt-hd-titulo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;}
+.rpt-hd-sub{font-size:10px;color:rgba(255,255,255,.55);margin-top:3px;}
+.rpt-hd-meta{font-size:10px;color:rgba(255,255,255,.5);text-align:right;line-height:1.6;}
+.rpt-filtro{background:#EAE7F5;padding:7px 20px;font-size:10px;color:#3D2490;font-weight:600;border-bottom:1px solid #C5BDE8;}
+.rpt-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid #E2E8F0;}
+.rpt-kpi{padding:18px 22px;border-right:1px solid #E2E8F0;}
+.rpt-kpi:last-child{border-right:none;}
+.rpt-kpi-lbl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;color:#64748B;margin-bottom:8px;}
+.rpt-kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:#1A0D4A;line-height:1;margin-bottom:6px;}
+.rpt-kpi-sub{font-size:10px;color:#64748B;}
+.rpt-section{padding:14px 20px 0;}
+.rpt-section-titulo{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#3D2490;border-bottom:1px solid #C5BDE8;padding-bottom:6px;margin-bottom:10px;}
+.rpt-chart{width:100%;margin-bottom:8px;display:block;}
+.rpt-footer{margin-top:16px;padding:10px 20px;background:#F5F4FB;border-top:1px solid #E2E8F0;font-size:9px;color:#94A3B8;display:flex;justify-content:space-between;}
+
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  @page{size:A4 portrait;margin:0;}
+  body>*:not(#print-report){display:none!important;}
+  #print-report{display:block!important;}
+  #print-report table{font-size:10px;width:100%;}
+  #print-report thead th{padding:5px 10px;font-size:9px;}
+  #print-report td{padding:4px 10px;}
+  #print-report td.r{font-size:10px;}
+}
+td.neutro{color:var(--cinza);}
+
+@media(max-width:1200px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr);}
+  .charts-2col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="../index.html" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+      border-radius:6px;padding:7px 9px;display:flex;align-items:center;text-decoration:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <div class="logo-box"><img src="data:image/png;base64,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" alt="A.Gaspar" style="height:34px;width:auto;display:block"></div>
+    <div class="h-titulo">
+      <h1>PAINEL FINANCEIRO</h1>
+      <p>MG-004 · Ponte sobre o Rio São Francisco · Custos e Desembolsos · até 30/04/2026</p>
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="badge"><span>Custo Total</span><strong id="hdr-total">—</strong></div>
+    <div class="badge badge-verde"><span>Faturado Acumulado</span><strong>—</strong></div>
+    <div class="badge"><span>Período</span><strong>Ago/25 – Abr/26</strong></div>
+    <div class="btn-fonte-wrap" title="Tamanho da fonte">
+      <span class="btn-fonte-lbl">Fonte</span>
+      <button class="btn-fonte" id="bf-n" onclick="setFonte(0)">A</button>
+      <button class="btn-fonte" id="bf-m" onclick="setFonte(1)">A+</button>
+      <button class="btn-fonte" id="bf-g" onclick="setFonte(2)">A++</button>
+    </div>
+    <button class="btn-pdf" id="btn-pdf" onclick="gerarPDF()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Relatório PDF
+    </button>
+  </div>
+</header>
+
+<div class="status-bar">
+  <div><span class="dot-ok"></span><span id="sb-txt">Carregando…</span></div>
+  <div style="font-size:13px;color:var(--cinza);font-weight:500">Atualizado: 30/04/2026 · Nenhuma NF emitida · Acumulado Sem medições emitidas</div>
+</div>
+
+<nav>
+  <button class="ativo" onclick="pg('visao',this)">📊 Visão Geral</button>
+  <button onclick="pg('categorias',this)">🏷️ Apropriações</button>
+  <button onclick="pg('fornecedores',this)">🏢 Fornecedores</button>
+  <button onclick="pg('detalhado',this)">📋 Extrato</button>
+</nav>
+
+<div class="filtros-bar">
+  <span class="f-lbl">Filtros:</span>
+  <select class="f-sel" id="f-mes" onchange="aplicar()">
+    <option value="">Todos os meses</option>
+  </select>
+  <select class="f-sel" id="f-cat" onchange="aplicar()">
+    <option value="">Todas as apropriações</option>
+  </select>
+  <div class="search-wrap">
+    <span class="s-ico">🔍</span>
+    <input class="search-input" id="f-busca" type="text" placeholder="Buscar fornecedor ou histórico…" oninput="aplicar()">
+  </div>
+  <span class="f-limpar" onclick="limpar()">✕ Limpar filtros</span>
+</div>
+
+<main>
+
+<!-- ========== VISÃO GERAL ========== -->
+<div class="pagina ativa" id="pg-visao">
+
+  <!-- KPI Hero Block -->
+  <div class="kpi-hero">
+    <div class="kpi-hero-hd">
+      <div>
+        <div class="kpi-hero-title">Visão Financeira Consolidada</div>
+        <div class="kpi-hero-sub">MG-004 · Ponte sobre o Rio São Francisco · Construtora A. Gaspar S/A × DER-MG · Contrato em elaboração</div>
+      </div>
+      <div class="kpi-hero-tag" id="kpi-hero-ref">Base: Abr/2026</div>
+    </div>
+    <div class="kpi-row">
+
+      <!-- Custo -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-ibox custo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D2490" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="kpi-card-lbl">Custo Total<br>Acumulado</div>
+        </div>
+        <div class="kpi-card-val" id="kpi-tot">—</div>
+        <div class="kpi-tags">
+          <span class="kpi-tag info">Ago/25 – Abr/26</span>
+          <span class="kpi-tag" id="kpi-hero-count">— lançamentos</span>
+        </div>
+      </div>
+
+      <div class="kpi-sep"></div>
+
+      <!-- Faturamento -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-ibox fat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <div class="kpi-card-lbl">Faturamento<br>Acumulado</div>
+        </div>
+        <div class="kpi-card-val" style="font-size:20px;color:var(--cinza);margin-top:4px">Sem medição emitida</div>
+        <div class="kpi-tags">
+          <span class="kpi-tag ok">Nenhuma NF emitida</span>
+          <span class="kpi-tag">até Abr/2026</span>
+        </div>
+      </div>
+
+      <div class="kpi-sep"></div>
+
+      <!-- Resultado -->
+      <div class="kpi-card" id="kpi-resultado-card">
+        <div class="kpi-card-top">
+          <div class="kpi-ibox res" id="kpi-res-ibox">
+            <svg id="kpi-res-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#854D0E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+              <polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
+          <div class="kpi-card-lbl">Resultado<br>Fat. − Custo</div>
+        </div>
+        <div class="kpi-card-val" id="kpi-saldo">—</div>
+        <div class="kpi-tags">
+          <span class="kpi-tag" id="kpi-saldo-sub">—</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Separador Curva S -->
+  <div class="diag-hd"><div class="diag-hd-line"></div><div class="diag-hd-lbl">Curva S — Desempenho Financeiro</div><div class="diag-hd-line"></div></div>
+
+  <!-- Curva S -->
+  <div class="chart-card" style="margin-bottom:22px;">
+    <div class="card-header">
+      <div>
+        <div class="card-titulo">Curva S — Custo × Faturamento × Resultado</div>
+        <div class="card-sub">Barras: custo mensal · Laranja: custo acumulado · Verde: faturamento acumulado · Azul: resultado acumulado</div>
+      </div>
+      <div class="curva-legs">
+        <div class="c-leg"><div class="c-dot bar" style="background:rgba(61,36,144,.7);"></div>Custo mensal</div>
+        <div class="c-leg"><div class="c-dot" style="background:#F59E0B;"></div>Custo acumulado</div>
+        <div class="c-leg"><div class="c-dot" style="background:#16A34A;"></div>Faturado acumulado</div>
+        <div class="c-leg"><div class="c-dot" style="background:#2563EB;border-style:dashed;"></div>Resultado acumulado</div>
+      </div>
+    </div>
+    <div style="height:340px;"><canvas id="chCurva"></canvas></div>
+  </div>
+
+  <!-- Separador Diagnóstico -->
+  <div class="diag-hd"><div class="diag-hd-line"></div><div class="diag-hd-lbl">Diagnóstico Mensal</div><div class="diag-hd-line"></div></div>
+
+  <div id="div-diagnostico" style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- Tabela Custo × Faturamento por Mês (compacta, largura total) -->
+    <div class="table-card" style="margin-bottom:0">
+      <div class="tbl-header">
+        <div>
+          <div class="tbl-titulo">Custo × Faturamento por Mês</div>
+          <div class="tbl-sub">Desembolso, medição e resultado mensal</div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl-compact">
+          <thead><tr>
+            <th>Mês</th>
+            <th class="r">Custo</th>
+            <th class="r">Faturado</th>
+            <th class="r">Resultado</th>
+            <th class="r">Result. Acumulado</th>
+          </tr></thead>
+          <tbody id="tbody-diag"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Curva ABC (largura total, todas as linhas visíveis) -->
+    <div class="table-card" style="margin-bottom:0">
+      <div class="tbl-header">
+        <div>
+          <div class="tbl-titulo">Curva ABC — Composição do Custo</div>
+          <div class="tbl-sub">Classe A ≤ 70% · Classe B 71–90% · Classe C &gt; 90%</div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Apropriação</th>
+            <th class="r">Total (R$)</th>
+            <th class="r">%</th>
+            <th class="r">% Acum.</th>
+            <th style="text-align:center">Classe</th>
+          </tr></thead>
+          <tbody id="tbody-comp"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ========== APROPRIAÇÕES ========== -->
+<div class="pagina" id="pg-categorias">
+  <div class="charts-2col" style="margin-bottom:16px;">
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-titulo">Custo por Tipo de Apropriação</div>
+          <div class="card-sub">Valor desembolsado por categoria</div>
+        </div>
+        <span class="card-badge" id="bdg-cat">—</span>
+      </div>
+      <div style="height:400px;"><canvas id="chCatBar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-titulo">Participação %</div><div class="card-sub">Distribuição do custo total</div></div>
+      </div>
+      <div class="donut-wrap"><canvas id="chDonut"></canvas>
+        <div class="donut-centro"><strong id="donut-tot">—</strong><span>Total</span></div>
+      </div>
+      <ul class="leg-list" id="leg-donut"></ul>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="tbl-header">
+      <div><div class="tbl-titulo">Apropriação por Mês</div><div class="tbl-sub">Evolução mensal de cada tipo</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead id="thead-cm"></thead><tbody id="tbody-cm"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FORNECEDORES ========== -->
+<div class="pagina" id="pg-fornecedores">
+  <div class="charts-2col" style="margin-bottom:16px;">
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-titulo">Top 15 Fornecedores</div><div class="card-sub">Por valor total pago</div></div>
+      </div>
+      <div style="height:420px;"><canvas id="chFornBar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-titulo">Concentração</div><div class="card-sub">Top 5 vs demais</div></div>
+      </div>
+      <div style="height:420px;"><canvas id="chFornDonut"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="tbl-header">
+      <div><div class="tbl-titulo">Ranking de Fornecedores</div><div class="tbl-sub" id="sub-forn">—</div></div>
+      <div class="search-wrap">
+        <span class="s-ico">🔍</span>
+        <input class="search-input" id="busca-forn" type="text" placeholder="Buscar fornecedor…" oninput="filtrarForn()">
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:44px">#</th>
+          <th>Fornecedor</th>
+          <th>Apropriação</th>
+          <th class="r">Nº Pag.</th>
+          <th class="r">Total Pago</th>
+          <th class="r">% do Total</th>
+          <th style="min-width:100px">Participação</th>
+        </tr></thead>
+        <tbody id="tbody-forn"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== EXTRATO ========== -->
+<div class="pagina" id="pg-detalhado">
+  <div class="table-card">
+    <div class="tbl-header">
+      <div><div class="tbl-titulo">Extrato de Baixas — MG-004</div><div class="tbl-sub" id="sub-det">—</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="f-lbl">Linhas:</span>
+        <select class="f-sel" id="pp" onchange="irPg(1)" style="min-width:70px;">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>Fornecedor</th><th>Apropriação</th>
+          <th>Histórico</th><th class="r">Valor (R$)</th><th class="r">Total Pago (R$)</th><th>Banco</th>
+        </tr></thead>
+        <tbody id="tbody-det"></tbody>
+        <tfoot id="tfoot-det"></tfoot>
+      </table>
+    </div>
+    <div class="pag" id="paginacao"></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// =====================================================
+// DADOS EMBARCADOS
+// =====================================================
+const DADOS_RAW = [{"nome":"CONSELHO REGIONAL DE","data":"14/08/2025","mesAno":"08/2025","hist":"ART CARGO E FUNCAO - DR BERNARDO/ MG-004","valor":103.03,"multa":0,"desc":0,"total":103.03,"banco":"341","titulo":"8608976694"},{"nome":"CONSELHO REGIONAL DE","data":"14/08/2025","mesAno":"08/2025","hist":"ART CARGO E FUNCAO - ALEXSANDRA/ MG-004","valor":103.03,"multa":0,"desc":0,"total":103.03,"banco":"341","titulo":"8608976747"},{"nome":"CONSELHO REGIONAL DE","data":"14/08/2025","mesAno":"08/2025","hist":"ART CARGO E FUNCAO - MAILDE/ MG-004","valor":103.03,"multa":0,"desc":0,"total":103.03,"banco":"341","titulo":"8608976814"},{"nome":"CONSELHO REGIONAL DE","data":"30/01/2026","mesAno":"01/2026","hist":"ANUIDADE CREA/2026 - FILIAL MINAS GERAIS","valor":2265.56,"multa":0,"desc":0,"total":2265.56,"banco":"341","titulo":"8610379226"},{"nome":"CONSELHO REGIONAL DE","data":"30/01/2026","mesAno":"01/2026","hist":"ANUIDADE CREA/2026 - RICARDO GASPAR","valor":598.83,"multa":0,"desc":0,"total":598.83,"banco":"341","titulo":"20263001"},{"nome":"RICARDO C GASPAR","data":"02/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-01 RICARDO GASPAR/MG","valor":16219.35,"multa":0,"desc":0,"total":16219.35,"banco":"341","titulo":"01202509"},{"nome":"RICARDO C GASPAR","data":"02/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-02 RICARDO CORREIA/M","valor":1961.99,"multa":0,"desc":0,"total":1961.99,"banco":"341","titulo":"02202509"},{"nome":"RICARDO C GASPAR","data":"08/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-03 RICARDO CORREIA/M","valor":31667.16,"multa":0,"desc":0,"total":31667.16,"banco":"341","titulo":"03202509"},{"nome":"RICARDO C GASPAR","data":"08/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-03 RICARDO CORREIA/M","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"0320250902"},{"nome":"RICARDO C GASPAR","data":"15/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-04 RICARDO GASPAR/MG","valor":14805.22,"multa":0,"desc":0,"total":14805.22,"banco":"341","titulo":"04202509"},{"nome":"RICARDO C GASPAR","data":"15/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-04 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"042025092"},{"nome":"RICARDO C GASPAR","data":"22/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-05A RICARDO CORREIA/","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"5A202509"},{"nome":"RICARDO C GASPAR","data":"29/09/2025","mesAno":"09/2025","hist":"PRESTACAO DE CONTAS-06A RICARDO CORREIA/","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"06A202509"},{"nome":"RICARDO C GASPAR","data":"06/10/2025","mesAno":"10/2025","hist":"PRESTACAO DE CONTAS-07 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"07202510"},{"nome":"RICARDO C GASPAR","data":"13/10/2025","mesAno":"10/2025","hist":"PRESTACAO DE CONTAS-08 RICARDO CORREIA/M","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"08202510"},{"nome":"RICARDO C GASPAR","data":"20/10/2025","mesAno":"10/2025","hist":"PRESTACAO DE CONTAS-09 RICARDO CORREIA/M","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"09202510"},{"nome":"RICARDO C GASPAR","data":"27/10/2025","mesAno":"10/2025","hist":"PRESTACAO DE CONTAS-10 RICARDO CORREIA/M","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"10202510"},{"nome":"RICARDO C GASPAR","data":"27/10/2025","mesAno":"10/2025","hist":"PRESTACAO DE CONTAS-10 RICARDO GASPAR/MG","valor":2130.52,"multa":0,"desc":0,"total":2130.52,"banco":"341","titulo":"1020251002"},{"nome":"RICARDO C GASPAR","data":"03/11/2025","mesAno":"11/2025","hist":"PRESTACAO DE CONTAS-11 RICARDO CORREIA/M","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"11202511"},{"nome":"RICARDO C GASPAR","data":"10/11/2025","mesAno":"11/2025","hist":"PRESTACAO DE CONTAS-12A RICARDO CORREIA/","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"12A202511"},{"nome":"RICARDO C GASPAR","data":"17/11/2025","mesAno":"11/2025","hist":"PRESTACAO DE CONTAS-13 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"13202511"},{"nome":"RICARDO C GASPAR","data":"24/11/2025","mesAno":"11/2025","hist":"PRESTACAO DE CONTAS-14 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"14202511"},{"nome":"RICARDO C GASPAR","data":"01/12/2025","mesAno":"12/2025","hist":"PRESTACAO DE CONTAS-15 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"15202512"},{"nome":"RICARDO C GASPAR","data":"08/12/2025","mesAno":"12/2025","hist":"PRESTACAO DE CONTAS- 16A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"16202512"},{"nome":"RICARDO C GASPAR","data":"15/12/2025","mesAno":"12/2025","hist":"PRESTACAO DE CONTAS-17 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"17202512"},{"nome":"RICARDO C GASPAR","data":"22/12/2025","mesAno":"12/2025","hist":"PRESTACAO DE CONTAS- 18A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"18A202512"},{"nome":"RICARDO C GASPAR","data":"29/12/2025","mesAno":"12/2025","hist":"PRESTACAO DE CONTAS-19 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"19202512"},{"nome":"RICARDO C GASPAR","data":"29/12/2025","mesAno":"12/2025","hist":"PRESTACAO DE CONTAS-RICARDO GASPAR/MG-00","valor":4150.15,"multa":0,"desc":0,"total":4150.15,"banco":"341","titulo":"192025121"},{"nome":"RICARDO C GASPAR","data":"05/01/2026","mesAno":"01/2026","hist":"PRESTACAO DE CONTAS-20 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"20202601"},{"nome":"RICARDO C GASPAR","data":"12/01/2026","mesAno":"01/2026","hist":"PRESTACAO DE CONTAS- 21A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"21A20261"},{"nome":"RICARDO C GASPAR","data":"19/01/2026","mesAno":"01/2026","hist":"PRESTACAO DE CONTAS- 22A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"22A20261"},{"nome":"RICARDO C GASPAR","data":"19/01/2026","mesAno":"01/2026","hist":"PRESTACAO DE CONTAS- 19 RICARDO CORREIA/","valor":4150.15,"multa":0,"desc":0,"total":4150.15,"banco":"341","titulo":"1920261"},{"nome":"RICARDO C GASPAR","data":"26/01/2026","mesAno":"01/2026","hist":"PRESTACAO DE CONTAS- 23A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"23A20261"},{"nome":"RICARDO C GASPAR","data":"02/02/2026","mesAno":"02/2026","hist":"PRESTACAO DE CONTAS- 24 RICARDO CORREIA/","valor":1215,"multa":0,"desc":0,"total":1215,"banco":"341","titulo":"2420262"},{"nome":"RICARDO C GASPAR","data":"02/02/2026","mesAno":"02/2026","hist":"PRESTACAO DE CONTAS- 24A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"24A20262"},{"nome":"RICARDO C GASPAR","data":"02/02/2026","mesAno":"02/2026","hist":"PRESTACAO DE CONTAS-23 RICARDO CORREIA/M","valor":19607.34,"multa":0,"desc":0,"total":19607.34,"banco":"341","titulo":"2320262"},{"nome":"RICARDO C GASPAR","data":"09/02/2026","mesAno":"02/2026","hist":"PRESTACAO DE CONTAS- 25A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"25A20262"},{"nome":"RICARDO C GASPAR","data":"18/02/2026","mesAno":"02/2026","hist":"PRESTACAO DE CONTAS-26 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"2620262"},{"nome":"RICARDO C GASPAR","data":"23/02/2026","mesAno":"02/2026","hist":"PRESTACAO DE CONTAS- 27A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"27A20262"},{"nome":"RICARDO C GASPAR","data":"02/03/2026","mesAno":"03/2026","hist":"PRESTACAO DE CONTAS- 28A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"28A202603"},{"nome":"RICARDO C GASPAR","data":"09/03/2026","mesAno":"03/2026","hist":"PRESTACAO DE CONTAS- 29A RICARDO CORREIA","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"29A202603"},{"nome":"RICARDO C GASPAR","data":"16/03/2026","mesAno":"03/2026","hist":"PRESTACAO DE CONTAS-30 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"30202603"},{"nome":"RICARDO C GASPAR","data":"23/03/2026","mesAno":"03/2026","hist":"PRESTACAO DE CONTAS- 31-A RICARDO CORREI","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"31-A202603"},{"nome":"RICARDO C GASPAR","data":"23/03/2026","mesAno":"03/2026","hist":"PRESTACAO DE CONTAS- 31 RICARDO CORREIA/","valor":4936.96,"multa":0,"desc":0,"total":4936.96,"banco":"341","titulo":"31-AGC202603"},{"nome":"RICARDO C GASPAR","data":"30/03/2026","mesAno":"03/2026","hist":"PRESTACAO DE CONTAS- 32-A RICARDO CORREI","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"32-A202603"},{"nome":"RICARDO C GASPAR","data":"06/04/2026","mesAno":"04/2026","hist":"PRESTACAO DE CONTAS-33 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"33202604"},{"nome":"RICARDO C GASPAR","data":"13/04/2026","mesAno":"04/2026","hist":"PRESTACAO DE CONTAS-34 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"34202604"},{"nome":"RICARDO C GASPAR","data":"20/04/2026","mesAno":"04/2026","hist":"PRESTACAO DE CONTAS-35 RICARDO GASPAR/MG","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"35202604"},{"nome":"RICARDO C GASPAR","data":"27/04/2026","mesAno":"04/2026","hist":"PRESTACAO DE CONTAS-36 RICARDO CORREIA/M","valor":5000,"multa":0,"desc":0,"total":5000,"banco":"341","titulo":"36042024"},{"nome":"J S S COMERCIO VAREJ","data":"12/12/2025","mesAno":"12/2025","hist":"K-NF-387- ESMALTE SINTETICO, THINNER/MG-","valor":238.9,"multa":0,"desc":0,"total":238.9,"banco":"341","titulo":"000000387"},{"nome":"NMQ COMERCIO DE MAQU","data":"17/11/2025","mesAno":"11/2025","hist":"21/48 - EMPRESTIMO BANCO SAFRA-ESCAVADE","valor":15833.33,"multa":8891.03,"desc":0,"total":24724.36,"banco":"422","titulo":"000049487"},{"nome":"VENEZA EQUIPAMENTOS","data":"17/11/2025","mesAno":"11/2025","hist":"14/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":1255.72,"desc":0,"total":8538.74,"banco":"341","titulo":"000033724"},{"nome":"VENEZA EQUIPAMENTOS","data":"15/12/2025","mesAno":"12/2025","hist":"15/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":912.09,"desc":0,"total":8195.11,"banco":"341","titulo":"000033724"},{"nome":"NMQ COMERCIO DE MAQU","data":"15/12/2025","mesAno":"12/2025","hist":"22/48 - EMPRESTIMO BANCO SAFRA-ESCAVADE","valor":15833.33,"multa":7664.69,"desc":0,"total":23498.02,"banco":"422","titulo":"000049487"},{"nome":"NMQ COMERCIO DE MAQU","data":"15/01/2026","mesAno":"01/2026","hist":"23/48 - EMPRESTIMO BANCO SAFRA-ESCAVADE","valor":15833.33,"multa":7796.37,"desc":0,"total":23629.7,"banco":"422","titulo":"000049487"},{"nome":"VENEZA EQUIPAMENTOS","data":"15/01/2026","mesAno":"01/2026","hist":"16/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":1041.88,"desc":0,"total":8324.9,"banco":"341","titulo":"000033724"},{"nome":"VENEZA EQUIPAMENTOS","data":"18/02/2026","mesAno":"02/2026","hist":"17/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":1162.75,"desc":0,"total":8445.77,"banco":"341","titulo":"000033724"},{"nome":"NMQ COMERCIO DE MAQU","data":"18/02/2026","mesAno":"02/2026","hist":"24/48 - EMPRESTIMO BANCO SAFRA-ESCAVADE","valor":15833.33,"multa":7798.33,"desc":0,"total":23631.66,"banco":"422","titulo":"000049487"},{"nome":"VENEZA EQUIPAMENTOS","data":"18/02/2026","mesAno":"02/2026","hist":"17/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":1162.75,"desc":0,"total":8445.77,"banco":"341","titulo":"000033737"},{"nome":"VENEZA EQUIPAMENTOS","data":"18/02/2026","mesAno":"02/2026","hist":"17/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":1162.75,"desc":0,"total":8445.77,"banco":"341","titulo":"000033726"},{"nome":"VENEZA EQUIPAMENTOS","data":"16/03/2026","mesAno":"03/2026","hist":"18/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":677.42,"desc":0,"total":7960.44,"banco":"341","titulo":"000033726"},{"nome":"VENEZA EQUIPAMENTOS","data":"16/03/2026","mesAno":"03/2026","hist":"18/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":677.42,"desc":0,"total":7960.44,"banco":"341","titulo":"000033737"},{"nome":"NMQ COMERCIO DE MAQU","data":"16/03/2026","mesAno":"03/2026","hist":"25/48 - EMPRESTIMO BANCO SAFRA-ESCAVADE","valor":15833.33,"multa":6556.9,"desc":0,"total":22390.23,"banco":"422","titulo":"000049487"},{"nome":"VENEZA EQUIPAMENTOS","data":"16/03/2026","mesAno":"03/2026","hist":"18/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":677.42,"desc":0,"total":7960.44,"banco":"341","titulo":"000033724"},{"nome":"VENEZA EQUIPAMENTOS","data":"15/04/2026","mesAno":"04/2026","hist":"19/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":849.35,"desc":0,"total":8132.37,"banco":"341","titulo":"000033724"},{"nome":"NMQ COMERCIO DE MAQU","data":"15/04/2026","mesAno":"04/2026","hist":"26/48 - EMPRESTIMO BANCO SAFRA-ESCAVADE","valor":15833.33,"multa":6979.55,"desc":0,"total":22812.88,"banco":"422","titulo":"000049487"},{"nome":"VENEZA EQUIPAMENTOS","data":"15/04/2026","mesAno":"04/2026","hist":"19/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":849.35,"desc":0,"total":8132.37,"banco":"341","titulo":"000033737"},{"nome":"VENEZA EQUIPAMENTOS","data":"15/04/2026","mesAno":"04/2026","hist":"19/53 - FINANCIAMENTO DE RETROESCAVADEI","valor":7283.02,"multa":849.35,"desc":0,"total":8132.37,"banco":"341","titulo":"000033726"},{"nome":"CASA DO CAMINHAO COM","data":"04/12/2025","mesAno":"12/2025","hist":"NF-41172 - COXIM,FILTRO,TAMPA/MG-004","valor":260.1,"multa":0,"desc":0,"total":260.1,"banco":"341","titulo":"000041172"},{"nome":"SANTOS LIMA COMERCIO","data":"08/12/2025","mesAno":"12/2025","hist":"1/3 - K-NF-35353- VENTILADOR SOPRANTE P","valor":215,"multa":0,"desc":0,"total":215,"banco":"341","titulo":"000035353"},{"nome":"AUTO PECAS PADRE CIC","data":"15/12/2025","mesAno":"12/2025","hist":"K-NF-499323- ANTIFERRUGEM, FILTRO DE AR","valor":104.04,"multa":0,"desc":0,"total":104.04,"banco":"341","titulo":"000499323"},{"nome":"SANTOS LIMA COMERCIO","data":"06/01/2026","mesAno":"01/2026","hist":"2/3 - K-NF-35353- VENTILADOR SOPRANTE P","valor":215,"multa":0,"desc":0,"total":215,"banco":"341","titulo":"000035353"},{"nome":"SANTOS LIMA COMERCIO","data":"06/02/2026","mesAno":"02/2026","hist":"3/3 - K-NF-35353- VENTILADOR SOPRANTE P","valor":215,"multa":0,"desc":0,"total":215,"banco":"341","titulo":"000035353"},{"nome":"GNAZA INDUSTRIA E CO","data":"03/12/2025","mesAno":"12/2025","hist":"NF 406 - SERVICO DE MANUTENCAO EM GRUPO","valor":3900,"multa":0,"desc":0,"total":3900,"banco":"341","titulo":"0000000000406"},{"nome":"KLP AGENCIA DE VIAGE","data":"10/09/2025","mesAno":"09/2025","hist":"NF 3327825 - PASSAGENS AEREAS E HOSPEDAG","valor":3276.92,"multa":0,"desc":0,"total":3276.92,"banco":"341","titulo":"0000003327825"},{"nome":"VOUDLOG TRANSPORTES","data":"03/12/2025","mesAno":"12/2025","hist":"NF 1198 - FRETE S/ NF 43490 CONVICTA IND","valor":25000,"multa":0,"desc":0,"total":25000,"banco":"341","titulo":"000001198"},{"nome":"VOUDLOG TRANSPORTES","data":"03/12/2025","mesAno":"12/2025","hist":"NF 1199 - FRETE S/ NF 43457 CONVICTA IND","valor":25000,"multa":0,"desc":0,"total":25000,"banco":"341","titulo":"000001199"},{"nome":"TOTVS S.A.","data":"15/12/2025","mesAno":"12/2025","hist":"NF 4308842 - LICENCA RECRUTAMENTO E SELE","valor":196.63,"multa":0,"desc":0,"total":196.63,"banco":"341","titulo":"0000004308842"},{"nome":"TOTVS S.A.","data":"22/12/2025","mesAno":"12/2025","hist":"NF 4281219 - LICENCAS PARA O SOFTWARE AG","valor":80.58,"multa":0,"desc":0,"total":80.58,"banco":"341","titulo":"0000004281219"},{"nome":"TOTVS S.A.","data":"24/12/2025","mesAno":"12/2025","hist":"NF 4295167 - NUVEM","valor":564.05,"multa":0,"desc":0,"total":564.05,"banco":"341","titulo":"0000004295167"},{"nome":"TOTVS S.A.","data":"14/01/2026","mesAno":"01/2026","hist":"NF 4308791 - LICENCAS E DEMAIS MODULOS","valor":1572.36,"multa":0,"desc":0,"total":1572.36,"banco":"341","titulo":"0000004308791"},{"nome":"TOTVS S.A.","data":"14/01/2026","mesAno":"01/2026","hist":"NF 4335239 - LICENCA RECRUTAMENTO E SELE","valor":199.48,"multa":0,"desc":0,"total":199.48,"banco":"341","titulo":"0000004335239"},{"nome":"TOTVS S.A.","data":"20/01/2026","mesAno":"01/2026","hist":"NF 4308819 - LICENCAS PARA O SOFTWARE AG","valor":80.58,"multa":0,"desc":0,"total":80.58,"banco":"341","titulo":"0000004308819"},{"nome":"TOTVS S.A.","data":"26/01/2026","mesAno":"01/2026","hist":"NF 4322790 - NUVEM","valor":564.05,"multa":0,"desc":0,"total":564.05,"banco":"341","titulo":"0000004322790"},{"nome":"TOTVS S.A.","data":"18/02/2026","mesAno":"02/2026","hist":"NF 4335180 - LICENCAS E DEMAIS MODULOS","valor":1610,"multa":0,"desc":0,"total":1610,"banco":"341","titulo":"0000004335180"},{"nome":"TOTVS S.A.","data":"18/02/2026","mesAno":"02/2026","hist":"NF 4365567 - LICENCA RECRUTAMENTO E SELE","valor":199.48,"multa":0,"desc":0,"total":199.48,"banco":"341","titulo":"0000004365567"},{"nome":"TOTVS S.A.","data":"18/02/2026","mesAno":"02/2026","hist":"NF4376634 - TOTVS MUDAR HISTORICO - STHE","valor":41.65,"multa":0,"desc":0,"total":41.65,"banco":"341","titulo":"0000004376634"},{"nome":"TOTVS S.A.","data":"18/02/2026","mesAno":"02/2026","hist":"NF 4376637 - TOTVS MUDAR HISTORICO - STH","valor":16.97,"multa":0,"desc":0,"total":16.97,"banco":"341","titulo":"0000004376637"},{"nome":"TOTVS S.A.","data":"20/02/2026","mesAno":"02/2026","hist":"1/6 - CESSAO E BASE DE DADOS - FLUIG","valor":96.68,"multa":0,"desc":0,"total":96.68,"banco":"341","titulo":"0000004390873"},{"nome":"TOTVS S.A.","data":"20/02/2026","mesAno":"02/2026","hist":"NF 4335215 - LICENCAS PARA O SOFTWARE AG","valor":83.19,"multa":0,"desc":0,"total":83.19,"banco":"341","titulo":"0000004335215"},{"nome":"TOTVS S.A.","data":"24/02/2026","mesAno":"02/2026","hist":"NF 4376646 - TOTVS FLUIG","valor":143.75,"multa":0,"desc":0,"total":143.75,"banco":"341","titulo":"0000004376646"},{"nome":"TOTVS S.A.","data":"24/02/2026","mesAno":"02/2026","hist":"NF 4351171 - NUVEM","valor":582.32,"multa":0,"desc":0,"total":582.32,"banco":"341","titulo":"0000004351171"},{"nome":"TOTVS S.A.","data":"16/03/2026","mesAno":"03/2026","hist":"NF 4365527 - LICENCAS E DEMAIS MODULOS","valor":1610,"multa":0,"desc":0,"total":1610,"banco":"341","titulo":"0000004365527"},{"nome":"TOTVS S.A.","data":"16/03/2026","mesAno":"03/2026","hist":"NF 4376643 - FLUIG","valor":24.28,"multa":0,"desc":0,"total":24.28,"banco":"341","titulo":"0000004376643"},{"nome":"TOTVS S.A.","data":"16/03/2026","mesAno":"03/2026","hist":"NF 4376645 - FLUIG","valor":6.76,"multa":0,"desc":0,"total":6.76,"banco":"341","titulo":"0000004376645"},{"nome":"TOTVS S.A.","data":"16/03/2026","mesAno":"03/2026","hist":"2/6 - CESSAO E BASE DE DADOS - FLUIG","valor":47.24,"multa":0,"desc":0,"total":47.24,"banco":"341","titulo":"0000004390873"},{"nome":"TOTVS S.A.","data":"16/03/2026","mesAno":"03/2026","hist":"NF 4394010 - FLUIG","valor":258.11,"multa":0,"desc":0,"total":258.11,"banco":"341","titulo":"0000004394010"},{"nome":"TOTVS S.A.","data":"20/03/2026","mesAno":"03/2026","hist":"NF 4365549 - LICENCAS PARA O SOFTWARE AG","valor":83.19,"multa":0,"desc":0,"total":83.19,"banco":"341","titulo":"0000004365549"},{"nome":"TOTVS S.A.","data":"24/03/2026","mesAno":"03/2026","hist":"NF 4379765 - NUVEM","valor":582.32,"multa":0,"desc":0,"total":582.32,"banco":"341","titulo":"0000004379765"},{"nome":"TOTVS S.A.","data":"14/04/2026","mesAno":"04/2026","hist":"3/6 - CESSAO E BASE DE DADOS - FLUIG","valor":47.24,"multa":0,"desc":0,"total":47.24,"banco":"341","titulo":"0000004390873"},{"nome":"TOTVS S.A.","data":"14/04/2026","mesAno":"04/2026","hist":"NF 4393970 - FLUIG","valor":6.76,"multa":0,"desc":0,"total":6.76,"banco":"341","titulo":"0000004393970"},{"nome":"TOTVS S.A.","data":"14/04/2026","mesAno":"04/2026","hist":"NF 4393983 - LICENCAS E DEMAIS MODULOS","valor":1705.24,"multa":0,"desc":0,"total":1705.24,"banco":"341","titulo":"0000004393983"},{"nome":"TOTVS S.A.","data":"14/04/2026","mesAno":"04/2026","hist":"NF 4420778 - TREINAMENTO / CURSOS DA TOT","valor":73.51,"multa":0,"desc":0,"total":73.51,"banco":"341","titulo":"0000004420778"},{"nome":"TOTVS S.A.","data":"14/04/2026","mesAno":"04/2026","hist":"NF 4422138  - FLUIG","valor":258.11,"multa":0,"desc":0,"total":258.11,"banco":"341","titulo":"0000004422138"},{"nome":"TOTVS S.A.","data":"20/04/2026","mesAno":"04/2026","hist":"NF 4394001 -LICENCAS PARA O SOFTWARE AG","valor":86.88,"multa":0,"desc":0,"total":86.88,"banco":"341","titulo":"0000004394001"},{"nome":"TOTVS S.A.","data":"24/04/2026","mesAno":"04/2026","hist":"NF 4408353 - NUVEM","valor":582.32,"multa":0,"desc":0,"total":582.32,"banco":"341","titulo":"0000004408353"},{"nome":"40.581.725 FABIO DA","data":"13/02/2026","mesAno":"02/2026","hist":"NF 102 - SERV DE ASSESSORIA E REGULARIZA","valor":4115.58,"multa":0,"desc":0,"total":4115.58,"banco":"341","titulo":"0000000000102"},{"nome":"AUTO VIACAO VALE DO","data":"30/09/2025","mesAno":"09/2025","hist":"NF 345 - ONIBUS /MG-004","valor":45000,"multa":0,"desc":0,"total":45000,"banco":"341","titulo":"000000345"},{"nome":"DEPARTAMENTO DE TRAN","data":"27/02/2026","mesAno":"02/2026","hist":"LICENCIAMENTO 2026 - UAZ2C40","valor":94.61,"multa":0,"desc":0,"total":94.61,"banco":"001","titulo":"0000012026240"},{"nome":"DEPARTAMENTO DE TRAN","data":"27/02/2026","mesAno":"02/2026","hist":"LICENCIAMENTO 2026 - UAZC242","valor":94.61,"multa":0,"desc":0,"total":94.61,"banco":"001","titulo":"0000012026242"},{"nome":"GOVERNO DO PARANA SE","data":"27/02/2026","mesAno":"02/2026","hist":"IPVA 2026 - UAZ2C40","valor":6289.21,"multa":27.91,"desc":0,"total":6317.12,"banco":"341","titulo":"0000022026240"},{"nome":"GOVERNO DO PARANA SE","data":"27/02/2026","mesAno":"02/2026","hist":"IPVA 2026 - UAZ2C42","valor":6305.16,"multa":27.9,"desc":0,"total":6333.06,"banco":"341","titulo":"0000022026242"},{"nome":"DETRAN/ RJ","data":"09/03/2026","mesAno":"03/2026","hist":"LICENCIAMENTO 2026/ LTZ4104 AZERA/ DETRA","valor":293.71,"multa":0,"desc":0,"total":293.71,"banco":"341","titulo":"0000410412026"},{"nome":"DETRAN/ RJ","data":"09/03/2026","mesAno":"03/2026","hist":"IPVA2026/ LTZ4104 AZERA / DETRAN RJ/ MG-","valor":693.56,"multa":12.09,"desc":0,"total":705.65,"banco":"341","titulo":"4104189889322"},{"nome":"DETRAN/ RJ","data":"09/03/2026","mesAno":"03/2026","hist":"IPVA2026/ LTZ4104 AZERA DETRAN RJ/MG-004","valor":627,"multa":12.09,"desc":0,"total":639.09,"banco":"341","titulo":"4104189889630"},{"nome":"DETRAN/ RJ","data":"09/03/2026","mesAno":"03/2026","hist":"IPVA 2026/ DETRAN RJ LTZ4104 AZERA/MG-00","valor":610.82,"multa":0,"desc":0,"total":610.82,"banco":"341","titulo":"4104189899796"},{"nome":"JUNTO SEGURO S.A","data":"08/09/2025","mesAno":"09/2025","hist":"1/12 - SEGURO CONSORCIO PONTE FRANCISCO/","valor":141875.4,"multa":0,"desc":0,"total":141875.4,"banco":"341","titulo":"0000000025860"},{"nome":"UNIDAS LOCADORA S.A.","data":"20/10/2025","mesAno":"10/2025","hist":"NF 32754  - P 22/08 A 21/09/25 LOCACAO D","valor":4079.88,"multa":0,"desc":0,"total":4079.88,"banco":"341","titulo":"0000000032754"},{"nome":"UNIDAS LOCADORA S.A.","data":"27/10/2025","mesAno":"10/2025","hist":"NF 4430 - P 21/09 A 28/09/25 LOCACAO DE","valor":1286.79,"multa":0,"desc":0,"total":1286.79,"banco":"341","titulo":"0000000004430"},{"nome":"UNIDAS LOCADORA S.A.","data":"01/12/2025","mesAno":"12/2025","hist":"FT-137222-P 06/10 A 05/11/25-LOCACAO DE","valor":4188.47,"multa":0,"desc":0,"total":4188.47,"banco":"341","titulo":"0000000137222"},{"nome":"UNIDAS LOCADORA S.A.","data":"26/12/2025","mesAno":"12/2025","hist":"NF 141001 - P 05/11 A 05/12/25 - LOCACAO","valor":3792.78,"multa":0,"desc":0,"total":3792.78,"banco":"341","titulo":"0000000141001"},{"nome":"UNIDAS LOCADORA S.A.","data":"26/12/2025","mesAno":"12/2025","hist":"NF 141002  - P 05/12 A 05/12/25 - LOCACA","valor":205.45,"multa":0,"desc":0,"total":205.45,"banco":"341","titulo":"0000000141002"},{"nome":"LIDER TAXI AEREO S/A","data":"21/11/2025","mesAno":"11/2025","hist":"NF 2025922 - SERVICO DE ATENDIMENTO AERO","valor":1340,"multa":0,"desc":0,"total":1340,"banco":"341","titulo":"0000002025922"},{"nome":"PADRAO INVESTIMENTOS","data":"15/12/2025","mesAno":"12/2025","hist":"NF 1074 - - SERV DE  ATENDIMENTO DA AERO","valor":357.56,"multa":0,"desc":0,"total":357.56,"banco":"341","titulo":"0000000001074"},{"nome":"VIBRA ENERGIA S.A","data":"22/12/2025","mesAno":"12/2025","hist":"NF 20525 - JET A NAO TABELADO - COMBUSTI","valor":7043.52,"multa":0,"desc":0,"total":7043.52,"banco":"341","titulo":"000020525"},{"nome":"CONCESSIONARIA DO AE","data":"22/12/2025","mesAno":"12/2025","hist":"NF 20257576 - SERVICO DE POUSO/MG-004","valor":612.8,"multa":0,"desc":0,"total":612.8,"banco":"341","titulo":"0000020257576"},{"nome":"BLOCO DE ONZE AEROPO","data":"11/02/2026","mesAno":"02/2026","hist":"NF 83  - SERVICO DE POUSO - AVIAO/MG-004","valor":483.28,"multa":0,"desc":0,"total":483.28,"banco":"341","titulo":"0000000000083"},{"nome":"ICP COMERCIO DE COMB","data":"09/03/2026","mesAno":"03/2026","hist":"NF154 - JET A NAO TABELADO - COMBUSTIVEL","valor":7061.6,"multa":0,"desc":0,"total":7061.6,"banco":"341","titulo":"000000154"},{"nome":"HANGAR 1 COMERCIO DE","data":"16/03/2026","mesAno":"03/2026","hist":"NF 1187 - JET A - NACIONAL - COMBUSTIVEL","valor":6900,"multa":0,"desc":0,"total":6900,"banco":"341","titulo":"000001187"},{"nome":"CONCESSIONARIA DO BL","data":"20/03/2026","mesAno":"03/2026","hist":"NF 631 - SERVICO DE POUSO/MG-004","valor":552.42,"multa":0,"desc":0,"total":552.42,"banco":"341","titulo":"0000000000631"},{"nome":"BLOCO DE ONZE AEROPO","data":"06/04/2026","mesAno":"04/2026","hist":"NF 348- SERVICO DE POUSO - AVIAO/MG-004","valor":505.89,"multa":0,"desc":0,"total":505.89,"banco":"341","titulo":"0000000000348"},{"nome":"VIBRA ENERGIA S.A","data":"30/04/2026","mesAno":"04/2026","hist":"NF 21217 - JET A NAO TABELADO - COMBUSTI","valor":9650.32,"multa":0,"desc":0,"total":9650.32,"banco":"341","titulo":"000021217"},{"nome":"UNIMED NATAL SOCIEDA","data":"10/04/2026","mesAno":"04/2026","hist":"NF 5294692 - PLANO DE SAUDE UNIMED","valor":2736.27,"multa":0,"desc":0,"total":2736.27,"banco":"341","titulo":"0000005294692"},{"nome":"PLUXEE BENEFICIOS BR","data":"03/02/2026","mesAno":"02/2026","hist":"NF-2641460579 - CESTA BASICA","valor":1996.57,"multa":0,"desc":0,"total":1996.57,"banco":"341","titulo":"0002641460579"},{"nome":"PLUXEE BENEFICIOS BR","data":"03/03/2026","mesAno":"03/2026","hist":"FT-2641685263 - CESTA BASICA","valor":2000.42,"multa":0,"desc":0,"total":2000.42,"banco":"341","titulo":"0002641685263"},{"nome":"PLUXEE BENEFICIOS BR","data":"02/04/2026","mesAno":"04/2026","hist":"NF-2642002722 - CESTA BASICA","valor":2000.42,"multa":0,"desc":0,"total":2000.42,"banco":"341","titulo":"0002642002722"},{"nome":"MINISTERIO DA FAZEND","data":"20/04/2026","mesAno":"04/2026","hist":"IRRF TOTVS S/A","valor":1.17,"multa":0,"desc":0,"total":1.17,"banco":"341","titulo":"0000004420778"},{"nome":"DEPARTAMENTO DE ESTR","data":"30/12/2025","mesAno":"12/2025","hist":"IRRF/MG-004, NFS 5990, 1ª MED","valor":5211.56,"multa":0,"desc":0,"total":5211.56,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"30/12/2025","mesAno":"12/2025","hist":"IRRF/MG-004, NFS 5991, 1ª MED","valor":4666.56,"multa":0,"desc":0,"total":4666.56,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"30/12/2025","mesAno":"12/2025","hist":"IRRF/MG-004, NFS 5992, 2ª MED","valor":10593.42,"multa":0,"desc":0,"total":10593.42,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"30/12/2025","mesAno":"12/2025","hist":"IRRF/MG-004, NFS 5993, 2ª MED","valor":9388.82,"multa":0,"desc":0,"total":9388.82,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"30/12/2025","mesAno":"12/2025","hist":"IRRF/MG-004, NFS 6006, 3ª MED","valor":10422.92,"multa":0,"desc":0,"total":10422.92,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"30/12/2025","mesAno":"12/2025","hist":"IRRF/MG-004, NFS 6007, 3ª MED","valor":9623.32,"multa":0,"desc":0,"total":9623.32,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"02/02/2026","mesAno":"02/2026","hist":"IRRF/MG-004, NFS 6017, 4ª MED","valor":14924.59,"multa":0,"desc":0,"total":14924.59,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"02/02/2026","mesAno":"02/2026","hist":"IRRF/MG-004, NFS 6018, 4ª MED","valor":12847.31,"multa":0,"desc":0,"total":12847.31,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"09/03/2026","mesAno":"03/2026","hist":"IRRF/MG-004, NFS 6070, 5ª MED","valor":12797.61,"multa":0,"desc":0,"total":12797.61,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"09/03/2026","mesAno":"03/2026","hist":"IRRF/MG-004, NFS 6071,5ª MED","valor":10921.35,"multa":0,"desc":0,"total":10921.35,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"20/03/2026","mesAno":"03/2026","hist":"IRRF/MG-004, NFS 6099, 6ª MED","valor":3273.96,"multa":0,"desc":0,"total":3273.96,"banco":"001","titulo":""},{"nome":"DEPARTAMENTO DE ESTR","data":"20/03/2026","mesAno":"03/2026","hist":"IRRF/MG-004, NFS 6100, 6ª MED","valor":30205.68,"multa":0,"desc":0,"total":30205.68,"banco":"001","titulo":""},{"nome":"MINISTERIO DA FAZEND","data":"27/02/2026","mesAno":"02/2026","hist":"IR JANEIRO/26 - MG-004","valor":122741.33,"multa":0,"desc":0,"total":122741.33,"banco":"341","titulo":"1220253012"},{"nome":"MINISTERIO DA FAZEND","data":"30/04/2026","mesAno":"04/2026","hist":"IR MARCO/26 -MG-004","valor":184829.05,"multa":0,"desc":0,"total":184829.05,"banco":"341","titulo":"042026300412"},{"nome":"INSTITUTO NACIONAL D","data":"20/10/2025","mesAno":"10/2025","hist":"INSS SOB RC SILVEIRO SOUZA/MG-004","valor":108,"multa":0,"desc":0,"total":108,"banco":"341","titulo":"102025"},{"nome":"MINISTERIO DA FAZEND","data":"20/01/2026","mesAno":"01/2026","hist":"CONT SOCIAL RETIDA NA FONTE TURANO AVIAC","valor":17.44,"multa":0,"desc":0,"total":17.44,"banco":"341","titulo":"0000000001074"},{"nome":"MUNICIPIO DE MANGA","data":"15/12/2025","mesAno":"12/2025","hist":"ISS S/ NF 5992 2º MEDICAO/ MG-004","valor":26488.76,"multa":0,"desc":0,"total":26488.76,"banco":"001","titulo":"5992"},{"nome":"MUNICIPIO DE MANGA","data":"15/12/2025","mesAno":"12/2025","hist":"ISS S/ NF 5990 1º MEDICAO/ MG-004","valor":13034.12,"multa":0,"desc":0,"total":13034.12,"banco":"001","titulo":"5990"},{"nome":"MUNICIPIO DE MATIAS","data":"18/12/2025","mesAno":"12/2025","hist":"ISS S/ NF 5991 1º MEDICAO/ MG-004","valor":19444.03,"multa":0,"desc":0,"total":19444.03,"banco":"341","titulo":"5991"},{"nome":"MUNICIPIO DE MATIAS","data":"18/12/2025","mesAno":"12/2025","hist":"ISS S/ NF 5993 2º MEDICAO/ MG-004","valor":39120.12,"multa":0,"desc":0,"total":39120.12,"banco":"341","titulo":"5993"},{"nome":"MUNICIPIO DE MANGA","data":"15/01/2026","mesAno":"01/2026","hist":"ISS S/ NF 6006 3º MEDICAO/ MG-004","valor":43434.04,"multa":0,"desc":0,"total":43434.04,"banco":"001","titulo":"6006"},{"nome":"MUNICIPIO DE MATIAS","data":"15/01/2026","mesAno":"01/2026","hist":"ISS S/ NF 6007 3º MEDICAO/ MG-004","valor":40097.17,"multa":0,"desc":0,"total":40097.17,"banco":"001","titulo":"6007"},{"nome":"MUNICIPIO DE MATIAS","data":"20/02/2026","mesAno":"02/2026","hist":"ISS S/ NF 6017 - 4º MEDICAO/ MG-004","valor":62185.83,"multa":0,"desc":0,"total":62185.83,"banco":"341","titulo":"6017"},{"nome":"MUNICIPIO DE MANGA","data":"20/02/2026","mesAno":"02/2026","hist":"ISS S/ NF 6018 - 4º MEDICAO/ MG-004","valor":53535.86,"multa":0,"desc":0,"total":53535.86,"banco":"001","titulo":"6018"},{"nome":"MUNICIPIO DE MATIAS","data":"13/03/2026","mesAno":"03/2026","hist":"ISS S/ NF 6070 - 5º MEDICAO/ MG-004","valor":53323.38,"multa":0,"desc":0,"total":53323.38,"banco":"341","titulo":"6070"},{"nome":"MUNICIPIO DE MANGA","data":"13/03/2026","mesAno":"03/2026","hist":"ISS S/ NF 6071 - 5º MEDICAO/ MG-004","valor":45511.04,"multa":0,"desc":0,"total":45511.04,"banco":"001","titulo":"6071"},{"nome":"MUNICIPIO DE MANGA","data":"20/04/2026","mesAno":"04/2026","hist":"ISS S/ NF 6099 6º MEDICAO/ MG-004","valor":13646.92,"multa":0,"desc":0,"total":13646.92,"banco":"001","titulo":"6099"},{"nome":"MUNICIPIO DE MATIAS","data":"20/04/2026","mesAno":"04/2026","hist":"ISS S/ NF 6100 - 6º MEDICAO/ MG-004","valor":125857.03,"multa":0,"desc":0,"total":125857.03,"banco":"341","titulo":"6100"},{"nome":"MINISTERIO DA FAZEND","data":"23/01/2026","mesAno":"01/2026","hist":"PIS S/FATURAMENTO DEZEMBRO/25 - MG-004","valor":10858.38,"multa":0,"desc":0,"total":10858.38,"banco":"341","titulo":"1220252412"},{"nome":"MINISTERIO DA FAZEND","data":"25/02/2026","mesAno":"02/2026","hist":"PIS S/FATURAMENTO JANEIRO/2026 - MG-004","valor":15043.12,"multa":0,"desc":0,"total":15043.12,"banco":"341","titulo":"0220262502"},{"nome":"MINISTERIO DA FAZEND","data":"24/04/2026","mesAno":"04/2026","hist":"PIS S/FATURAMENTO MARCO/2026 - MG-004","valor":30992.25,"multa":0,"desc":0,"total":30992.25,"banco":"341","titulo":"042026200430"},{"nome":"MINISTERIO DA FAZEND","data":"23/01/2026","mesAno":"01/2026","hist":"COFINS S/FATURAMENTO DEZEMBRO/25 - MG-00","valor":50115.6,"multa":0,"desc":0,"total":50115.6,"banco":"341","titulo":"1220252412"},{"nome":"MINISTERIO DA FAZEND","data":"25/02/2026","mesAno":"02/2026","hist":"COFINS S/FATURAMENTO JANEIRO/2026 - MG-0","valor":69429.78,"multa":0,"desc":0,"total":69429.78,"banco":"341","titulo":"0220262502"},{"nome":"MINISTERIO DA FAZEND","data":"24/04/2026","mesAno":"04/2026","hist":"COFINS S/FATURAMENTO MARCO/2026 - MG-004","valor":143041.18,"multa":0,"desc":0,"total":143041.18,"banco":"341","titulo":"042026240432"},{"nome":"MINISTERIO DA FAZEND","data":"27/02/2026","mesAno":"02/2026","hist":"CSLL  JANEIRO/26 - MG-004","valor":50916.31,"multa":0,"desc":0,"total":50916.31,"banco":"341","titulo":"1220253012"},{"nome":"MINISTERIO DA FAZEND","data":"30/04/2026","mesAno":"04/2026","hist":"CSLL  MARCO/26- MG-004","valor":80353.55,"multa":0,"desc":0,"total":80353.55,"banco":"341","titulo":"042026300425"},{"nome":"JUNTA COMERCIAL DO E","data":"26/08/2025","mesAno":"08/2025","hist":"GUIA JUCERN CONSORCIO PONTE FRANCISCO AD","valor":1030,"multa":0,"desc":0,"total":1030,"banco":"341","titulo":"101179050"},{"nome":"CERTIPE SERVICOS EM","data":"26/08/2025","mesAno":"08/2025","hist":"NF 14012  - TAXA DE CERTIFICADO DIGITAL","valor":175,"multa":0,"desc":0,"total":175,"banco":"341","titulo":"0000000014012"},{"nome":"CONSORCIO PONTE FRAN","data":"23/09/2025","mesAno":"09/2025","hist":"7,13","valor":216337.13,"multa":0,"desc":0,"total":216337.13,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"29/09/2025","mesAno":"09/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":68033.18,"multa":0,"desc":0,"total":68033.18,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"06/10/2025","mesAno":"10/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":115078.1,"multa":0,"desc":0,"total":115078.1,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"13/10/2025","mesAno":"10/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":244394.88,"multa":0,"desc":0,"total":244394.88,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"20/10/2025","mesAno":"10/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":28990.33,"multa":0,"desc":0,"total":28990.33,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"27/10/2025","mesAno":"10/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":128533.92,"multa":0,"desc":0,"total":128533.92,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"03/11/2025","mesAno":"11/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":240638.31,"multa":0,"desc":0,"total":240638.31,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"10/11/2025","mesAno":"11/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":249235.91,"multa":0,"desc":0,"total":249235.91,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"17/11/2025","mesAno":"11/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":100000,"multa":0,"desc":0,"total":100000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"19/11/2025","mesAno":"11/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":256810,"multa":0,"desc":0,"total":256810,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"24/11/2025","mesAno":"11/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":290023.54,"multa":0,"desc":0,"total":290023.54,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"01/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":336564.91,"multa":0,"desc":0,"total":336564.91,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"04/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":168014.47,"multa":0,"desc":0,"total":168014.47,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"08/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":389931.99,"multa":0,"desc":0,"total":389931.99,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"15/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":200000,"multa":0,"desc":0,"total":200000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"17/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":194207.86,"multa":0,"desc":0,"total":194207.86,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"22/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":450000,"multa":0,"desc":0,"total":450000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"24/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":303081.2,"multa":0,"desc":0,"total":303081.2,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"29/12/2025","mesAno":"12/2025","hist":"APORTE FINANCEIRO/ MG-004","valor":220379.54,"multa":0,"desc":0,"total":220379.54,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"05/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":290000,"multa":0,"desc":0,"total":290000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"06/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":167477.34,"multa":0,"desc":0,"total":167477.34,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"12/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":170000,"multa":0,"desc":0,"total":170000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"14/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":200000,"multa":0,"desc":0,"total":200000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"15/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":156189.11,"multa":0,"desc":0,"total":156189.11,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"19/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":390000,"multa":0,"desc":0,"total":390000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"21/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":171360.55,"multa":0,"desc":0,"total":171360.55,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"26/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":450000,"multa":0,"desc":0,"total":450000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"27/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":200000,"multa":0,"desc":0,"total":200000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"28/01/2026","mesAno":"01/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":126113.47,"multa":0,"desc":0,"total":126113.47,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"02/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":450000,"multa":0,"desc":0,"total":450000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"03/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":100000,"multa":0,"desc":0,"total":100000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"04/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":120319.42,"multa":0,"desc":0,"total":120319.42,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"09/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":475000,"multa":0,"desc":0,"total":475000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"11/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":170000,"multa":0,"desc":0,"total":170000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"12/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":90976.22,"multa":0,"desc":0,"total":90976.22,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"18/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":200000,"multa":0,"desc":0,"total":200000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"20/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":167169.84,"multa":0,"desc":0,"total":167169.84,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"23/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":350000,"multa":0,"desc":0,"total":350000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"25/02/2026","mesAno":"02/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":84925.2,"multa":0,"desc":0,"total":84925.2,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"02/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":960000,"multa":0,"desc":0,"total":960000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"04/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":280325.73,"multa":0,"desc":0,"total":280325.73,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"09/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":290000,"multa":0,"desc":0,"total":290000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"10/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":120000,"multa":0,"desc":0,"total":120000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"11/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":291059.75,"multa":0,"desc":0,"total":291059.75,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"16/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":300000,"multa":0,"desc":0,"total":300000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO PONTE FRAN","data":"18/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":270000,"multa":0,"desc":0,"total":270000,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO MANGA","data":"20/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":190484.72,"multa":0,"desc":0,"total":190484.72,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO MANGA","data":"23/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":320000,"multa":0,"desc":0,"total":320000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"25/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":677386.51,"multa":0,"desc":0,"total":677386.51,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"30/03/2026","mesAno":"03/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":570000,"multa":0,"desc":0,"total":570000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"01/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":175000,"multa":0,"desc":0,"total":175000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"02/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":152017.24,"multa":0,"desc":0,"total":152017.24,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"06/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":650000,"multa":0,"desc":0,"total":650000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"08/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":350000,"multa":0,"desc":0,"total":350000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"10/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":201134.58,"multa":0,"desc":0,"total":201134.58,"banco":"341","titulo":"619196992025"},{"nome":"CONSORCIO MANGA","data":"13/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":250000,"multa":0,"desc":0,"total":250000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"14/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":150000,"multa":0,"desc":0,"total":150000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"15/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":95000,"multa":0,"desc":0,"total":95000,"banco":"341","titulo":"6191969922026"},{"nome":"CONSORCIO MANGA","data":"16/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":54461.04,"multa":0,"desc":0,"total":54461.04,"banco":"341","titulo":"6191969904"},{"nome":"CONSORCIO MANGA","data":"20/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":350000,"multa":0,"desc":0,"total":350000,"banco":"341","titulo":"6191969904"},{"nome":"CONSORCIO MANGA","data":"22/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":390000,"multa":0,"desc":0,"total":390000,"banco":"341","titulo":"6191969904"},{"nome":"CONSORCIO MANGA","data":"23/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":71858.12,"multa":0,"desc":0,"total":71858.12,"banco":"341","titulo":"6191969904"},{"nome":"CONSORCIO MANGA","data":"27/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":280000,"multa":0,"desc":0,"total":280000,"banco":"341","titulo":"619196992026"},{"nome":"CONSORCIO MANGA","data":"29/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":350000,"multa":0,"desc":0,"total":350000,"banco":"341","titulo":"619196992026"},{"nome":"CONSORCIO MANGA","data":"30/04/2026","mesAno":"04/2026","hist":"APORTE FINANCEIRO/ MG-004","valor":471360.56,"multa":0,"desc":0,"total":471360.56,"banco":"341","titulo":"619196992026"}];
+const CLS = Object.fromEntries(CATS.map(c=>[c.id, c.cls]));
+const CORES = {
+  'Aço Estrutural':           '#1D4ED8',
+  'Concreto':                 '#15803D',
+  'Fundação':                 '#C2410C',
+  'Embarcações / Flutuantes': '#0369A1',
+  'Equipamentos (Compra)':    '#7E22CE',
+  'Locação de Equipamentos':  '#065F46',
+  'Mão de Obra':       '#92400E',
+  'Encargos Trabalhistas':    '#BE123C',
+  'Impostos e Retenções':     '#6D28D9',
+  'Consultoria e Projetos':   '#3730A3',
+  'Combustíveis':             '#B91C1C',
+  'Seguros':                  '#166534',
+  'Aluguel de Imóveis':       '#92400E',
+  'EPI / Uniformes':          '#334155',
+  'Transporte e Logística':   '#374151',
+  'Prestação de Contas':      '#86198F',
+  'Administrativo':           '#475569',
+  'Outros':                   '#9CA3AF',
+  'Locação de Veículos Leves':'#0369A1',
+};
+
+function categorizar(r) {
+  const h = (r.hist||'').toUpperCase();
+  const n = (r.nome||'').toUpperCase();
+  const hn = h + ' ' + n;
+
+  // 1. Aço / Fundação — Gerdau e ArcelorMittal
+  if (/ARCELORMITTAL/.test(n) && /BOBINA/.test(h)) return 'Fundação';
+  if (/CALTUBOS/.test(n)) return 'Fundação';
+  if (/ARCELORMITTAL|GERDAU ACOS|GUERDAU ACOS/.test(n)){
+    if (/VERGALHAO|VERGALHÃO|ARAME|PREGO/.test(h)) return 'Aço Estrutural';
+    return 'Embarcações / Flutuantes'; // chapa, perfil, cantoneira e demais
+  }
+
+  // 2. Concreto
+  if (/CONCRESERV|SUPERMIX CONCRETO/.test(n)) return 'Concreto';
+  if (/FORNECIMENTO DE CONCRETO|SERVICO DE CONCRETO/.test(h)) return 'Concreto';
+
+  // 3. Fundação
+  if (/DRILLING DO BRASIL/.test(n)) return 'Fundação';
+  if (/MEMPS EMPREEND/.test(n) && /CAMISA|FABRICACAO/.test(h)) return 'Fundação';
+  if (/POLY FUND/.test(n)) return 'Fundação';
+  if (/FUNDACAO|FUNDAÇÃO|ESTAQUEAMENTO|SONDAGEM|POLIMERO|POLÍMERO|CAMISA METAL/.test(h)) return 'Fundação';
+
+  // 4. Embarcações / Flutuantes
+  if (/OCEANORTE/.test(n)) return 'Embarcações / Flutuantes';
+  if (/D CORREA VIANA/.test(n) && /LANCHA|EMPURRADOR|EMBARCAC|TRIPULAC|FLUTUANTE/.test(h)) return 'Embarcações / Flutuantes';
+  if (/FLUTUANTE|EMPURRADOR|LANCHA|TRIPULAC|EMBARCAC/.test(h)) return 'Embarcações / Flutuantes';
+
+  // 5. Equipamentos (Compra)
+  if (/VILLA EMPREEN|LUIZ MONTEIRO/.test(n) && /COMPRA|BETONEIRA/.test(h)) return 'Equipamentos (Compra)';
+  if (/CONVICTA IND/.test(n) && /COMPRA|C45|BETONEIRA|SILO/.test(h)) return 'Equipamentos (Compra)';
+  if (/COMPRA DE.*CAMINHAO|COMPRA DO C45/.test(h)) return 'Equipamentos (Compra)';
+
+  // 5b. Locação de Veículos Leves
+  if (/UNIDAS LOCAD/.test(n)) return 'Locação de Veículos Leves';
+
+  // 6. Locação de Equipamentos
+  if (/AWURE|EDCIM COMERCIO|J E C VIANA|NMQ COMERCIO DE MAQ|CONVICTA LOCAC|SUED LOCAC|RAMIRO EQUIP|SANY IMPORT|MASTER EQUIP|ENEQUIPA|ROCESTER EQUIP|STUHLERT MAQ|MULLER GUIN|A ALUGAMAQUINAS|AG RENTAL|D F D CONST|BAUEN ENGENH/.test(n)) return 'Locação de Equipamentos';
+  if (/LOCACAO DE ESCAVADEIRA|LOCACAO DE CAMINHAO|LOCACAO DE ROLO|LOCACAO DE GUINDASTE|LOCACAO DE EQUIP|LOCACAO DE MAQUINA|ALUGUEL DE CAMINHAO|ALUGUEL DE ESCAVADEIRA|ALUGUEL DE GUINDASTE|ALUGUEL DE MAQUINA|ALUGUEL DE EQUIP/.test(h)) return 'Locação de Equipamentos';
+
+  // 7. Mão de Obra (salários, INSS folha, FGTS, VT, férias, 13°, rescisão, contrib. retributiva, TAR transf)
+  if (/CONSTRUTORA A GASPAR/.test(n) && /FOLHA|ADIANTAMENTO/.test(h)) return 'Mão de Obra';
+  if (/^FOLHA\/|^ADIANTAMENTO\/|^13°|^13ª|^FERIAS\/|^RESCISAO\//.test(h)) return 'Mão de Obra';
+  if (/INSS FOLHA|INSS 13|FGTS|VALE TRANSPORT|CONTRIB.*RETRIB|RESCISAO|13.*SALARIO|13.*SAL\b|TAR.*TRANSF.*SALARIO|TRANSF.*SALARIO/.test(h)) return 'Mão de Obra';
+  if (/CONTRIBUICAO ADICIONAL.*SENAI|CONTRIB.*ADICIONAL.*SENAI/.test(hn)) return 'Mão de Obra';
+  if (/CAIXA ECONOM/.test(n) && /FGTS/.test(h)) return 'Mão de Obra';
+  if (/INSTITUTO NACIONAL D/.test(n) && /INSS FOLHA|INSS 13/.test(h)) return 'Mão de Obra';
+  if (/SINDICATO DAS EMPRES/.test(n) && /VALE TRANSPORT|CONTRIB/.test(h)) return 'Mão de Obra';
+
+  // 8. Encargos Trabalhistas (saúde, alimentação, jovem aprendiz — benefícios não-folha)
+  if (/PLUXEE|TICKET SOLUCOES HDFG/.test(n) && /VALE|BENEFICIO|TICKET/.test(h)) return 'Encargos Trabalhistas';
+  if (/UNIMED|SUL AMERICA COMPAN|HUMANA ASSIST|UNYBRASIL/.test(n)) return 'Encargos Trabalhistas';
+  if (/PROGRAMA JOVEM APRENDIZ|CASA JOVEM/.test(hn)) return 'Encargos Trabalhistas';
+  if (/PLANO DE SAUDE/.test(h)) return 'Encargos Trabalhistas';
+
+  // 9. Impostos e Retenções
+  if (/MINISTERIO DA FAZ|SECRETARIA MUNICIPAL|SECRETARIA ESTADUAL|MUNICIPIO DE|DEPARTAMENTO ESTADUAL|INSTITUTO NACIONAL D|CORPO DE BOMBEIROS|CONSELHO REGIONAL|RECEITA FEDERAL/.test(n)) return 'Impostos e Retenções';
+  if (/CONT SOCIAL RETIDA|CONTRIBUICAO ADICIONAL|ANUIDADE CREA|SINDICATO|SESI|SENAI|SEBRAE/.test(hn)) return 'Impostos e Retenções';
+  if (/^INSS |^ISS |^IRRF |^IRRF$/.test(h) && !/FOLHA|13\//.test(h)) return 'Impostos e Retenções';
+
+  // 10. Consultoria e Projetos
+  if (/BFA CONSULT|PILARES CONS|PAULISTA ENGENH|PAULO SERGIO OLIVEIR|MARCIA APARE|SERGIO CAETANO|ENGCONSULT|CONVISAO|GREENLEGIS|SGLOBAL|MULTIPLANO ENGENH|ENESCIL|A1 ARQUEOL|BIOFOCUS|CONTROLE ANALITICO|MARCOS FREN|EMPRESA DE ENGENH/.test(n)) return 'Consultoria e Projetos';
+  if (/TOPOGRAFIA|PROJETO DE TR|COORDENACAO E ANALISE DE PROJ|CONSULTORIA TECNICA|SERVICO DE ENGENHARIA|ARQUEOLOGIA|GEOTECNIA/.test(h)) return 'Consultoria e Projetos';
+
+  // 11. Combustíveis — TICKLOG = abastecimento de frota; DIESEL = gerador/maquinário (não é frota)
+  if (/DIESEL/.test(h)) return 'Outros';
+  if (/RAIZEN|VIBRA ENERGIA|ICP COMERCIO DE COMB|AIR BP/.test(n)) return 'Combustíveis';
+  if (/TICKLOG/.test(hn)) return 'Combustíveis';
+  if (/TICKET SOLUCOES HDFG/.test(n) && /COMBUSTIVEL/.test(h)) return 'Combustíveis';
+  if (/COMBUSTIVEL|COMBUSTÍVEL|ABASTECIMENTO DE/.test(h)) return 'Combustíveis';
+
+  // 12. Seguros
+  if (/AVLA SEGUROS|SUL AMERICA SEGURO/.test(n)) return 'Seguros';
+  if (/APOLICE|SEGURO DE VIDA|SEGURO OBRA/.test(h)) return 'Seguros';
+
+  // 13. Aluguel de Imóveis (inclui abreviações ALG, erros de grafia, CAUCAO/CAUCOES)
+  if (/NEC NEGOCIOS IMOB|ANTERO ANDRADE|ANASILDA CARDOSO|ROMILDO ANTONIO|NOVA VIDA PLAN|ESPEDITO FRANC|RTC NEGOCIOS|ROSANA THAUMA|PAULO SERGIO OLIVEIR/.test(n) && /ALUGUEL|ALG |CAUCAO/.test(h)) return 'Aluguel de Imóveis';
+  if (/ALUGUEL|ALG REFERENTE|CAUCAO|CAUCOES|LOCACAO DE IMOVEL|LOCACAO DE ESPACO|LOCACAO DE ESCRITORIO/.test(h)) return 'Aluguel de Imóveis';
+
+  // 14. EPI / Uniformes
+  if (/JF SOLDAS E EPI|D NISSA UNIFORM|VALE SAFE/.test(n)) return 'EPI / Uniformes';
+  if (/EPIFLEX/.test(n) && /EPI|REDUCAO|ABRACADEIRA|GUARD/.test(h)) return 'EPI / Uniformes';
+  if (/ EPI\/| EPI-|EPI\/SP|CALCADO|CALCA,CAMISA|CONJUNTO EM BRIM|UNIFORME/.test(h)) return 'EPI / Uniformes';
+
+  // 15. Transporte e Logística
+  if (/WRF TRANSPORT|FEA TRANSPORT|SOROTRANS|LOKI EMPRESA|GUANABARA EMPRESA|ALMEIDA TRANSPORT|TRANSPORTES GUANA|J B TRANSPORT|TRANSPISARUK|VOUDLOG|GTS TRANSPORT|COALIANCA|TRANSPORTADORA SANA|TRANSPORTE TRAM/.test(n)) return 'Transporte e Logística';
+  if (/^FRETE\/|^CTE |FRETE SOB NF/.test(h)) return 'Transporte e Logística';
+
+  // 16. Prestação de Contas
+  if (/BRUNO BARBOSA|ESPEDITO FRANC|INGRID PRIS|AMANDA FER|PRISCILA MAR|LUIZA BEN|FABIANA VIEIRA|SANDRA GOMES|MAICON R|ROSANA THAUMA|JOSE WILSON/.test(n) && /PRESTACAO DE CONTAS/.test(h)) return 'Prestação de Contas';
+  if (/^PRESTACAO DE CONTAS/.test(h)) return 'Prestação de Contas';
+
+  // 17. Administrativo
+  if (/CLARO NXT|TELEFONICA|HAYP TELECOM|EASY CONN|COPA ENERGIA|ELETROPAU|COMPANHIA DE SANEA|TOTVS/.test(n)) return 'Administrativo';
+  if (/KLP AGENCIA|AEROPORTOS|JK TAXI|VOAR AVIATION|AVJET|BLOCO DE ONZE|INFRAMERICA|TRAMPOLIM|JHSF ADMIN|STARS SERVICES/.test(n)) return 'Administrativo';
+  if (/MRV LOCAC|TOTAL PTA LOCAC|LMA LOCAC/.test(n)) return 'Administrativo';
+  if (/MAGAZINE LUIZA|PRADA PLUS|BONI MORIS|HANGAR 1|FERRAMENTAS GERAIS|J F FERRAM|DEDET|CENTER MADE|BANCO DO BRASIL|BANCO SANTAN|BANCO DO NORD|CONSTRUTORA A GASPAR|EDSON FAUSTINO|JUSTEN/.test(n)) return 'Administrativo';
+  if (/CELULAR|TELEFONE|INTERNET|PASSAGEM|HOSPEDAGEM|HOTEL|TARIFA TRANSF|TARIF TRANSF|LICENCAS|ANUIDADE|SOFTWARE/.test(h)) return 'Administrativo';
+
+  return 'Outros';
+}
+
+// Pré-processar dados
+const DADOS = DADOS_RAW.map(r => ({...r, aprop: categorizar(r)}));
+
+// Helpers de formato
+const R = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const Rk = v => {                       // Eixo dos gráficos: sem Mi/K, separadores br
+  const n = Number(v||0);
+  return 'R$ ' + n.toLocaleString('pt-BR',{maximumFractionDigits:0});
+};
+
+// Ordenação cronológica MM/YYYY
+function sortMes(a,b){
+  const [ma,ya]=a.split('/'), [mb,yb]=b.split('/');
+  return (parseInt(ya)*100+parseInt(ma)) - (parseInt(yb)*100+parseInt(mb));
+}
+
+const LABEL_MES = {
+  '05/2025':'Ago/25','06/2025':'Jun/25','07/2025':'Jul/25','08/2025':'Ago/25',
+  '09/2025':'Set/25','10/2025':'Out/25','11/2025':'Nov/25','12/2025':'Dez/25',
+  '01/2026':'Jan/26','02/2026':'Fev/26','03/2026':'Mar/26','04/2026':'Abr/26',
+};
+const lm = m => LABEL_MES[m]||m;
+
+// Estado
+let filtros={mes:'',cat:'',busca:''}, pgAtual=1, filtrados=[...DADOS];
+let sortCol='data', sortDir=-1; // padrão: data desc (mais recente primeiro)
+let chCurva, chDonut, chCatBar, chFornBar, chFornDonut;
+
+// Init
+window.addEventListener('DOMContentLoaded',()=>{
+  // Preenche select de meses
+  const sel=document.getElementById('f-mes');
+  [...new Set(DADOS.map(r=>r.mesAno))].sort(sortMes).forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m; o.textContent=lm(m); sel.appendChild(o);
+  });
+  // Preenche select de categorias
+  const sc=document.getElementById('f-cat');
+  CATS.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent=c.id; sc.appendChild(o);
+  });
+  aplicar();
+});
+
+function aplicar(){
+  filtros.mes  = document.getElementById('f-mes').value;
+  filtros.cat  = document.getElementById('f-cat').value;
+  filtros.busca= document.getElementById('f-busca').value.toLowerCase();
+  filtrados = DADOS.filter(r=>{
+    if(filtros.mes  && r.mesAno!==filtros.mes) return false;
+    if(filtros.cat  && r.aprop!==filtros.cat)  return false;
+    if(filtros.busca && !r.nome.toLowerCase().includes(filtros.busca)
+                     && !r.hist.toLowerCase().includes(filtros.busca)) return false;
+    return true;
+  });
+  pgAtual=1;
+  renderTudo();
+}
+
+function limpar(){
+  ['f-mes','f-cat','f-busca','busca-forn'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  filtros={mes:'',cat:'',busca:''};
+  filtrados=[...DADOS];
+  pgAtual=1;
+  renderTudo();
+}
+
+function renderTudo(){
+  const tot=filtrados.reduce((s,r)=>s+r.total,0);
+  document.getElementById('hdr-total').textContent=R(tot);
+  renderSB();
+  renderKPIs(tot);
+  renderCurva();
+  renderDiagnostico();
+  renderCategorias();
+  renderFornecedores();
+  renderDetalhado();
+}
+
+function renderSB(){
+  const n=filtrados.length, tot=filtrados.reduce((s,r)=>s+r.total,0);
+  document.getElementById('sb-txt').textContent=
+    `${n.toLocaleString('pt-BR')} baixas · Custo filtrado: ${R(tot)}`;
+}
+
+function renderKPIs(tot){
+  document.getElementById('kpi-tot').textContent=R(tot);
+  // Contagem dinâmica no hero
+  const cnt=document.getElementById('kpi-hero-count');
+  if(cnt) cnt.textContent=filtrados.length.toLocaleString('pt-BR')+' lançamentos';
+  // Resultado = Faturado Acumulado − Custo Total
+  const fat=Object.values(FATURAMENTO).reduce((a,b)=>a+b,0);
+  const resultado=fat-tot;
+  const elVal=document.getElementById('kpi-saldo');
+  const elSub=document.getElementById('kpi-saldo-sub');
+  const ibox=document.getElementById('kpi-res-ibox');
+  const svg=document.getElementById('kpi-res-svg');
+  elVal.textContent=(resultado>=0?'+ ':' − ')+R(Math.abs(resultado));
+  if(resultado>=0){
+    elVal.style.color='#16A34A';
+    if(ibox) ibox.style.background='#DCFCE7';
+    if(svg) svg.setAttribute('stroke','#166534');
+    elSub.textContent='Margem positiva no período';
+    elSub.className='kpi-tag ok';
+  } else {
+    elVal.style.color='#DC2626';
+    if(ibox) ibox.style.background='#FEE2E2';
+    if(svg){svg.setAttribute('stroke','#DC2626');
+      svg.innerHTML='<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>';}
+    elSub.textContent='Custo acima do faturamento';
+    elSub.className='kpi-tag alerta';
+  }
+}
+
+function renderCurva(){
+  // Agrupar por mês
+  const porMes={};
+  filtrados.forEach(r=>{ porMes[r.mesAno]=(porMes[r.mesAno]||0)+r.total; });
+  // Usar todos os meses do dataset para garantir ordem completa
+  const todosMeses=[...new Set(DADOS.map(r=>r.mesAno))].sort(sortMes);
+  const labels=todosMeses.map(lm);
+  const custoMes=todosMeses.map(m=>porMes[m]||0);
+  let ac=0;
+  const custoAcum=custoMes.map(v=>(ac+=v,ac));
+  // Faturamento — MG-004 (sem medicoes emitidas)
+const FATURAMENTO = {};
+
+  filtrados.forEach(r=>{ porMes[r.mesAno]=(porMes[r.mesAno]||0)+r.total; });
+  const meses=[...new Set(DADOS.map(r=>r.mesAno))].sort(sortMes);
+  const ult=meses[meses.length-1];
+  const div=document.getElementById('div-meses');
+  div.innerHTML=meses.map(m=>{
+    const v=porMes[m]||0;
+    const fat=FATURAMENTO[m]||0;
+    return `<div class="mes-card${m===ult?' atual':''}">
+      <div class="mes-nome">${lm(m)}</div>
+      <div class="mes-val">${R(v)}</div>
+      ${fat?`<div class="mes-fat">Fat: ${R(fat)}</div>`:'<div class="mes-pct">Sem medição</div>'}
+    </div>`;
+  }).join('');
+}
+
+function renderDiagnostico(){
+  // --- Tabela Custo × Faturado por Mês ---
+  const todosMeses=[...new Set(DADOS.map(r=>r.mesAno))].sort(sortMes);
+  const porMes={};
+  filtrados.forEach(r=>{ porMes[r.mesAno]=(porMes[r.mesAno]||0)+r.total; });
+
+  let acCusto=0, acFat=0;
+  const linhasDiag=todosMeses.map(m=>{
+    const custo=porMes[m]||0;
+    const fat=FATURAMENTO[m]||0;
+    acCusto+=custo; acFat+=fat;
+    const res=fat-custo;
+    const resAcum=acFat-acCusto;
+    const clsRes=res>0?'positivo':res<0?'negativo':'neutro';
+    const clsAcum=resAcum>0?'positivo':resAcum<0?'negativo':'neutro';
+    // fat===0 mas custo>0 = sem medição no mês, mas resultado deve aparecer negativo
+    const fatCell=fat>0?R(fat):'<span style="color:var(--cinza);font-size:11px">sem medição</span>';
+    return `<tr>
+      <td style="font-weight:600">${lm(m)}</td>
+      <td class="r">${R(custo)}</td>
+      <td class="r">${fatCell}</td>
+      <td class="r ${clsRes}">${(res>=0?'+ ':' − ')+R(Math.abs(res))}</td>
+      <td class="r ${clsAcum}">${(resAcum>=0?'+ ':' − ')+R(Math.abs(resAcum))}</td>
+    </tr>`;
+  });
+  // Linha de totais — usa soma dinâmica do FATURAMENTO (mesma base do KPI)
+  const totCusto=filtrados.reduce((s,r)=>s+r.total,0);
+  const totFat=Object.values(FATURAMENTO).reduce((a,b)=>a+b,0);
+  const totRes=totFat-totCusto;
+  linhasDiag.push(`<tr style="background:#F8F7FD;font-weight:700;border-top:2px solid var(--borda)">
+    <td>TOTAL</td>
+    <td class="r">${R(totCusto)}</td>
+    <td class="r">${R(totFat)}</td>
+    <td class="r ${totRes>=0?'positivo':'negativo'}">${(totRes>=0?'+ ':' − ')+R(Math.abs(totRes))}</td>
+    <td class="r ${totRes>=0?'positivo':'negativo'}">${(totRes>=0?'+ ':' − ')+R(Math.abs(totRes))}</td>
+  </tr>`);
+  document.getElementById('tbody-diag').innerHTML=linhasDiag.join('');
+
+  // --- Composição do custo por categoria ---
+  const porCat={};
+  filtrados.forEach(r=>{ porCat[r.aprop]=(porCat[r.aprop]||0)+r.total; });
+  const total=Object.values(porCat).reduce((s,v)=>s+v,0);
+  const cats=Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
+  let acumPct=0;
+  document.getElementById('tbody-comp').innerHTML=cats.map(([cat,val])=>{
+    const pct=total?(val/total*100):0;
+    acumPct+=pct;
+    const cl=acumPct<=70?'A':acumPct<=90?'B':'C';
+    const clStyle=cl==='A'?'background:#FEE2E2;color:#991B1B':
+                  cl==='B'?'background:#FEF9C3;color:#854D0E':
+                           'background:#DCFCE7;color:#166534';
+    return `<tr>
+      <td><span class="cat ${CLS[cat]||'c17'}">${cat}</span></td>
+      <td class="r">${R(val)}</td>
+      <td class="r" style="color:var(--cinza)">${pct.toFixed(1)}%</td>
+      <td class="r"><strong style="color:var(--g-esc)">${acumPct.toFixed(1)}%</strong></td>
+      <td style="text-align:center"><span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:800;letter-spacing:.6px;${clStyle}">${cl}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCategorias(){
+  const porCat={};
+  filtrados.forEach(r=>{ porCat[r.aprop]=(porCat[r.aprop]||0)+r.total; });
+  const tot=Object.values(porCat).reduce((s,v)=>s+v,0);
+  const cats=Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('bdg-cat').textContent=R(tot);
+  document.getElementById('donut-tot').textContent=R(tot);
+
+  // Bar horizontal
+  if(chCatBar) chCatBar.destroy();
+  chCatBar=new Chart(document.getElementById('chCatBar').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:cats.map(c=>c[0]),
+      datasets:[{
+        data:cats.map(c=>c[1]),
+        backgroundColor:cats.map(c=>(CORES[c[0]]||'#9CA3AF')+'CC'),
+        borderColor:cats.map(c=>CORES[c[0]]||'#9CA3AF'),
+        borderWidth:1, borderRadius:3,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>R(ctx.raw)+' ('+((tot?ctx.raw/tot*100:0).toFixed(1))+'%)'}}},
+      scales:{
+        x:{ticks:{callback:v=>Rk(v),font:{family:'Barlow Condensed',size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        y:{ticks:{font:{family:'Barlow',size:10}},grid:{display:false}},
+      }
+    }
+  });
+
+  // Donut
+  if(chDonut) chDonut.destroy();
+  chDonut=new Chart(document.getElementById('chDonut').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:cats.map(c=>c[0]),
+      datasets:[{data:cats.map(c=>c[1]),
+        backgroundColor:cats.map(c=>CORES[c[0]]||'#9CA3AF'),
+        borderWidth:2, borderColor:'#fff'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.label+': '+R(ctx.raw)}}}}
+  });
+
+  // Legenda
+  document.getElementById('leg-donut').innerHTML=
+    cats.slice(0,10).map(([cat,val])=>`
+      <li>
+        <div class="leg-cor" style="background:${CORES[cat]||'#9CA3AF'}"></div>
+        <span class="leg-nome">${cat}</span>
+        <span class="leg-val">${R(val)}</span>
+        <span class="leg-pct">${tot?(val/tot*100).toFixed(1):0}%</span>
+      </li>`).join('');
+
+  // Tabela cat × mês
+  const meses=[...new Set(filtrados.map(r=>r.mesAno))].sort(sortMes);
+  const mtz={};
+  filtrados.forEach(r=>{
+    if(!mtz[r.aprop]) mtz[r.aprop]={};
+    mtz[r.aprop][r.mesAno]=(mtz[r.aprop][r.mesAno]||0)+r.total;
+  });
+  document.getElementById('thead-cm').innerHTML=`<tr>
+    <th>Apropriação</th>
+    ${meses.map(m=>`<th class="r">${lm(m)}</th>`).join('')}
+    <th class="r">Total</th></tr>`;
+  const linhas=cats.map(([cat,cTot])=>
+    `<tr>
+      <td><span class="cat ${CLS[cat]||'c17'}">${cat}</span></td>
+      ${meses.map(m=>`<td class="r">${mtz[cat]?.[m]?R(mtz[cat][m]):'—'}</td>`).join('')}
+      <td class="r" style="font-weight:700">${R(cTot)}</td>
+    </tr>`);
+  const totMes=meses.map(m=>filtrados.filter(r=>r.mesAno===m).reduce((s,r)=>s+r.total,0));
+  linhas.push(`<tr style="background:#F8F7FD;font-weight:700">
+    <td>TOTAL</td>
+    ${totMes.map(v=>`<td class="r">${R(v)}</td>`).join('')}
+    <td class="r">${R(tot)}</td></tr>`);
+  document.getElementById('tbody-cm').innerHTML=linhas.join('');
+}
+
+let todosForns=[];
+function renderFornecedores(){
+  const pf={};
+  filtrados.forEach(r=>{
+    if(!pf[r.nome]) pf[r.nome]={tot:0,cnt:0,cat:r.aprop};
+    pf[r.nome].tot+=r.total; pf[r.nome].cnt++;
+  });
+  const totG=Object.values(pf).reduce((s,v)=>s+v.tot,0);
+  todosForns=Object.entries(pf).sort((a,b)=>b[1].tot-a[1].tot);
+
+  // Top 15 bar
+  const t15=todosForns.slice(0,15);
+  if(chFornBar) chFornBar.destroy();
+  chFornBar=new Chart(document.getElementById('chFornBar').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:t15.map(([n])=>n.length>22?n.substring(0,22)+'…':n),
+      datasets:[{data:t15.map(([,v])=>v.tot),
+        backgroundColor:'rgba(61,36,144,.7)',borderColor:'rgba(61,36,144,1)',borderWidth:1,borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>R(ctx.raw)+'  ('+((totG?ctx.raw/totG*100:0).toFixed(1))+'%)'}}},
+      scales:{
+        x:{ticks:{callback:v=>Rk(v),font:{family:'Barlow Condensed',size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        y:{ticks:{font:{family:'Barlow',size:10}},grid:{display:false}},
+      }
+    }
+  });
+
+  // Donut concentração
+  const t5s=todosForns.slice(0,5).reduce((s,[,v])=>s+v.tot,0);
+  if(chFornDonut) chFornDonut.destroy();
+  chFornDonut=new Chart(document.getElementById('chFornDonut').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:[...todosForns.slice(0,5).map(([n])=>n.substring(0,20)),'Demais fornecedores'],
+      datasets:[{
+        data:[...todosForns.slice(0,5).map(([,v])=>v.tot),totG-t5s],
+        backgroundColor:['#1D4ED8','#15803D','#C2410C','#7E22CE','#0369A1','#CBD5E1'],
+        borderWidth:2,borderColor:'#fff'
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'50%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'Barlow',size:10},padding:8,boxWidth:12}},
+        tooltip:{callbacks:{label:ctx=>ctx.label+': '+R(ctx.raw)+' ('+(totG?(ctx.raw/totG*100).toFixed(1):0)+'%)'}}
+      }
+    }
+  });
+  filtrarForn();
+}
+
+function filtrarForn(){
+  const busca=(document.getElementById('busca-forn').value||'').toLowerCase();
+  const pf={};
+  filtrados.forEach(r=>{ if(!pf[r.nome]) pf[r.nome]={tot:0,cnt:0,cat:r.aprop}; pf[r.nome].tot+=r.total; pf[r.nome].cnt++; });
+  const totG=Object.values(pf).reduce((s,v)=>s+v.tot,0);
+  const lista=busca
+    ? todosForns.filter(([n])=>n.toLowerCase().includes(busca))
+    : todosForns;
+  document.getElementById('sub-forn').textContent=
+    `${lista.length} fornecedores · Total: ${R(lista.reduce((s,[,v])=>s+v.tot,0))}`;
+  const maxV=lista[0]?.[1]?.tot||1;
+  document.getElementById('tbody-forn').innerHTML=lista.slice(0,100).map(([nome,d],i)=>{
+    const pct=totG?(d.tot/totG*100):0;
+    const bw=(d.tot/maxV*100).toFixed(1);
+    const r=i+1, rc=r===1?'r1':r===2?'r2':r===3?'r3':'';
+    return `<tr>
+      <td class="rank-n ${rc}">${r}</td>
+      <td class="forn" title="${nome}">${nome}</td>
+      <td><span class="cat ${CLS[d.cat]||'c17'}">${d.cat}</span></td>
+      <td class="r">${d.cnt}</td>
+      <td class="r">${R(d.tot)}</td>
+      <td class="r">${pct.toFixed(2)}%</td>
+      <td style="padding-right:16px"><div class="bar-bg"><div class="bar-fg" style="width:${bw}%"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function sortVal(r,col){
+  if(col==='data'){const[d,m,y]=(r.data||'').split('/');return parseInt((y||'0')+(m||'0').padStart(2,'0')+(d||'0').padStart(2,'0'));}
+  return r[col];
+}
+function sortBy(col){
+  if(sortCol===col) sortDir=-sortDir;
+  else{sortCol=col; sortDir=(col==='total'||col==='valor')?-1:1;}
+  pgAtual=1;
+  renderDetalhado();
+}
+
+function renderDetalhado(){
+  const pp=parseInt(document.getElementById('pp').value)||50;
+  const totPg=Math.ceil(filtrados.length/pp)||1;
+  if(pgAtual>totPg) pgAtual=totPg;
+  const soma=filtrados.reduce((s,r)=>s+r.total,0);
+  document.getElementById('sub-det').textContent=
+    `${filtrados.length.toLocaleString('pt-BR')} registros selecionados`;
+
+  // Ordenação
+  const sorted=[...filtrados].sort((a,b)=>{
+    const va=sortVal(a,sortCol), vb=sortVal(b,sortCol);
+    if(typeof va==='number') return sortDir*(va-vb);
+    return sortDir*String(va||'').localeCompare(String(vb||''),'pt-BR');
+  });
+
+  // Atualizar cabeçalhos com ícone de ordenação
+  const ic=col=>col===sortCol?(sortDir===1?'▲':'▼'):'⇅';
+  const th=(col,lbl,cls='')=>{const a=col===sortCol;return `<th class="${cls}srt${a?' ativo':''}" onclick="sortBy('${col}')">${lbl} <span class="srt-ic${a?' on':''}">${ic(col)}</span></th>`;};
+  document.querySelector('#pg-detalhado thead tr').innerHTML=
+    th('data','Data')+th('nome','Fornecedor')+
+    '<th>Apropriação</th><th>Histórico</th>'+
+    th('valor','Valor (R$)','r ')+th('total','Total Pago (R$)','r ')+
+    '<th>Banco</th>';
+
+  const slice=sorted.slice((pgAtual-1)*pp,pgAtual*pp);
+  const tbody=document.getElementById('tbody-det');
+  if(!slice.length){
+    tbody.innerHTML='<tr><td colspan="7" class="empty">Nenhum registro encontrado.</td></tr>';
+  } else {
+    tbody.innerHTML=slice.map(r=>`<tr>
+      <td class="dt">${r.data}</td>
+      <td class="forn" title="${r.nome}">${r.nome}</td>
+      <td><span class="cat ${CLS[r.aprop]||'c17'}">${r.aprop}</span></td>
+      <td class="hist" title="${r.hist}">${r.hist}</td>
+      <td class="r">${R(r.valor)}</td>
+      <td class="r">${R(r.total)}</td>
+      <td style="color:var(--cinza);font-size:11px">${r.banco}</td>
+    </tr>`).join('');
+  }
+  document.getElementById('tfoot-det').innerHTML=`<tr>
+    <td colspan="4" class="tfoot-lbl">Total selecionado · ${filtrados.length.toLocaleString('pt-BR')} registros</td>
+    <td class="tfoot-val">${R(soma)}</td>
+    <td class="tfoot-val">${R(soma)}</td>
+    <td></td>
+  </tr>`;
+  renderPag(totPg);
+}
+
+function renderPag(tp){
+  const pag=document.getElementById('paginacao');
+  if(tp<=1){pag.innerHTML='';return;}
+  let b=`<button onclick="irPg(${pgAtual-1})" ${pgAtual===1?'disabled':''}>‹ Ant</button>`;
+  const r=2;
+  for(let i=1;i<=tp;i++){
+    if(i===1||i===tp||Math.abs(i-pgAtual)<=r)
+      b+=`<button class="${i===pgAtual?'ap':''}" onclick="irPg(${i})">${i}</button>`;
+    else if(Math.abs(i-pgAtual)===r+1)
+      b+=`<span>…</span>`;
+  }
+  b+=`<button onclick="irPg(${pgAtual+1})" ${pgAtual===tp?'disabled':''}>Próx ›</button>`;
+  b+=`<span style="margin-left:8px">Pág ${pgAtual} de ${tp}</span>`;
+  pag.innerHTML=b;
+}
+
+function irPg(n){
+  const pp=parseInt(document.getElementById('pp').value)||50;
+  const tp=Math.ceil(filtrados.length/pp)||1;
+  pgAtual=Math.max(1,Math.min(n,tp));
+  renderDetalhado();
+  document.getElementById('pg-detalhado').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function pg(id,btn){
+  document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('ativo'));
+  document.getElementById('pg-'+id).classList.add('ativa');
+  if(btn) btn.classList.add('ativo');
+}
+
+// ── Acessibilidade: tamanho de fonte ──────────────────────────────────────────
+const FONTE_CLASSES=['','fonte-m','fonte-g'];
+const FONTE_IDS=['bf-n','bf-m','bf-g'];
+function setFonte(nivel){
+  document.body.classList.remove('fonte-m','fonte-g');
+  if(FONTE_CLASSES[nivel]) document.body.classList.add(FONTE_CLASSES[nivel]);
+  FONTE_IDS.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('ativo',i===nivel);
+  });
+  try{localStorage.setItem('sp010-fonte',nivel);}catch(e){}
+}
+(function(){
+  const n=parseInt(localStorage.getItem('sp010-fonte')||'0');
+  if(n>0) setFonte(n);
+  else document.getElementById('bf-n').classList.add('ativo');
+})();
+
+// ── Gerador de Relatório PDF ──────────────────────────────────────────────────
+function gerarPDF(){
+  const btn=document.getElementById('btn-pdf');
+  btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Gerando…';
+  btn.disabled=true;
+
+  // Captura o gráfico como imagem antes de renderizar
+  const curvaEl=document.getElementById('chCurva');
+  const curvaImg=curvaEl?curvaEl.toDataURL('image/png'):'';
+
+  const now=new Date();
+  const dStr=now.toLocaleDateString('pt-BR');
+  const hStr=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const fname='SP010-Custos-'+dStr.replace(/\//g,'-');
+
+  const mesVal=document.getElementById('f-mes').value;
+  const catVal=document.getElementById('f-cat').value;
+  const filtroStr=(mesVal||'Todos os meses')+' · '+(catVal||'Todas as categorias')+' · '+filtrados.length.toLocaleString('pt-BR')+' lançamentos';
+
+  const tot=document.getElementById('kpi-tot').textContent;
+  const sal=document.getElementById('kpi-saldo').textContent;
+  const salSub=document.getElementById('kpi-saldo-sub').textContent;
+  const salCor=document.getElementById('kpi-saldo').style.color||'#DC2626';
+
+  const tblDiag=document.querySelector('#tbody-diag').closest('table').outerHTML;
+  const tblAbc =document.querySelector('#tbody-comp').closest('table').outerHTML;
+
+  document.getElementById('print-report').innerHTML=`
+    <div class="rpt-hd">
+      <div>
+        <div class="rpt-hd-titulo">Relatório Financeiro — MG-004</div>
+        <div class="rpt-hd-sub">Ponte sobre o Rio São Francisco · Construtora A. Gaspar S/A × DER-MG · Contrato em elaboração</div>
+      </div>
+      <div class="rpt-hd-meta">Gerado em ${dStr} às ${hStr}<br>Dados até 30/04/2026</div>
+    </div>
+    <div class="rpt-filtro">Filtros: ${filtroStr}</div>
+    <div class="rpt-kpis">
+      <div class="rpt-kpi">
+        <div class="rpt-kpi-lbl">Custo Total Acumulado</div>
+        <div class="rpt-kpi-val">${tot}</div>
+        <div class="rpt-kpi-sub">Ago/25 – Abr/26</div>
+      </div>
+      <div class="rpt-kpi">
+        <div class="rpt-kpi-lbl">Faturamento Acumulado</div>
+        <div class="rpt-kpi-val" style="color:#166534">Sem medições emitidas</div>
+        <div class="rpt-kpi-sub">Nenhuma NF emitida · até Abr/2026</div>
+      </div>
+      <div class="rpt-kpi">
+        <div class="rpt-kpi-lbl">Resultado (Fat. − Custo)</div>
+        <div class="rpt-kpi-val" style="color:${salCor}">${sal}</div>
+        <div class="rpt-kpi-sub">${salSub}</div>
+      </div>
+    </div>
+    ${curvaImg?`<div class="rpt-section"><div class="rpt-section-titulo">Curva S — Desempenho Financeiro</div><img src="${curvaImg}" class="rpt-chart"></div>`:''}
+    <div class="rpt-section"><div class="rpt-section-titulo">Diagnóstico Mensal</div>${tblDiag}</div>
+    <div class="rpt-section"><div class="rpt-section-titulo">Curva ABC — Composição do Custo</div>${tblAbc}</div>
+    <div class="rpt-footer">
+      <span>PMO · Construtora A. Gaspar S.A. · Documento confidencial</span>
+      <span>${fname}</span>
+    </div>`;
+
+  document.title=fname;
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.title='Painel Financeiro — MG-004 · Construtora A. Gaspar';
+      btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Relatório PDF';
+      btn.disabled=false;
+    },1500);
+  },200);
+}
+</script>
+
+<div id="print-report"></div>
+</body>
+</html>
