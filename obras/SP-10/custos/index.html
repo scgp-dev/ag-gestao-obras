@@ -259,6 +259,42 @@ body.fonte-g .kpi-hero-hd{padding:20px 28px;}
 .empty{padding:40px;text-align:center;color:var(--cinza);}
 td.positivo{color:#16A34A;font-weight:700;}
 td.negativo{color:#DC2626;font-weight:700;}
+
+/* ── BOTÃO PDF ── */
+.btn-pdf{background:rgba(252,211,77,.18);border:1px solid rgba(252,211,77,.4);border-radius:7px;
+  padding:5px 13px;color:#FCD34D;font-family:'Barlow',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;white-space:nowrap;}
+.btn-pdf:hover{background:rgba(252,211,77,.32);}
+.btn-pdf:disabled{opacity:.5;cursor:default;}
+
+/* ── RELATÓRIO PARA IMPRESSÃO ── */
+#print-report{display:none;}
+.rpt-hd{background:#1A0D4A;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;}
+.rpt-hd-titulo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;}
+.rpt-hd-sub{font-size:10px;color:rgba(255,255,255,.55);margin-top:3px;}
+.rpt-hd-meta{font-size:10px;color:rgba(255,255,255,.5);text-align:right;line-height:1.6;}
+.rpt-filtro{background:#EAE7F5;padding:7px 20px;font-size:10px;color:#3D2490;font-weight:600;border-bottom:1px solid #C5BDE8;}
+.rpt-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid #E2E8F0;}
+.rpt-kpi{padding:18px 22px;border-right:1px solid #E2E8F0;}
+.rpt-kpi:last-child{border-right:none;}
+.rpt-kpi-lbl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;color:#64748B;margin-bottom:8px;}
+.rpt-kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:#1A0D4A;line-height:1;margin-bottom:6px;}
+.rpt-kpi-sub{font-size:10px;color:#64748B;}
+.rpt-section{padding:14px 20px 0;}
+.rpt-section-titulo{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#3D2490;border-bottom:1px solid #C5BDE8;padding-bottom:6px;margin-bottom:10px;}
+.rpt-chart{width:100%;margin-bottom:8px;display:block;}
+.rpt-footer{margin-top:16px;padding:10px 20px;background:#F5F4FB;border-top:1px solid #E2E8F0;font-size:9px;color:#94A3B8;display:flex;justify-content:space-between;}
+
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  @page{size:A4 portrait;margin:0;}
+  body>*:not(#print-report){display:none!important;}
+  #print-report{display:block!important;}
+  #print-report table{font-size:10px;width:100%;}
+  #print-report thead th{padding:5px 10px;font-size:9px;}
+  #print-report td{padding:4px 10px;}
+  #print-report td.r{font-size:10px;}
+}
 td.neutro{color:var(--cinza);}
 
 @media(max-width:1200px){
@@ -291,6 +327,10 @@ td.neutro{color:var(--cinza);}
       <button class="btn-fonte" id="bf-m" onclick="setFonte(1)">A+</button>
       <button class="btn-fonte" id="bf-g" onclick="setFonte(2)">A++</button>
     </div>
+    <button class="btn-pdf" id="btn-pdf" onclick="gerarPDF()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Relatório PDF
+    </button>
   </div>
 </header>
 
@@ -1294,6 +1334,80 @@ function setFonte(nivel){
   if(n>0) setFonte(n);
   else document.getElementById('bf-n').classList.add('ativo');
 })();
+
+// ── Gerador de Relatório PDF ──────────────────────────────────────────────────
+function gerarPDF(){
+  const btn=document.getElementById('btn-pdf');
+  btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Gerando…';
+  btn.disabled=true;
+
+  // Captura o gráfico como imagem antes de renderizar
+  const curvaEl=document.getElementById('chCurva');
+  const curvaImg=curvaEl?curvaEl.toDataURL('image/png'):'';
+
+  const now=new Date();
+  const dStr=now.toLocaleDateString('pt-BR');
+  const hStr=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const fname='SP010-Custos-'+dStr.replace(/\//g,'-');
+
+  const mesVal=document.getElementById('f-mes').value;
+  const catVal=document.getElementById('f-cat').value;
+  const filtroStr=(mesVal||'Todos os meses')+' · '+(catVal||'Todas as categorias')+' · '+filtrados.length.toLocaleString('pt-BR')+' lançamentos';
+
+  const tot=document.getElementById('kpi-tot').textContent;
+  const sal=document.getElementById('kpi-saldo').textContent;
+  const salSub=document.getElementById('kpi-saldo-sub').textContent;
+  const salCor=document.getElementById('kpi-saldo').style.color||'#DC2626';
+
+  const tblDiag=document.querySelector('#tbody-diag').closest('table').outerHTML;
+  const tblAbc =document.querySelector('#tbody-comp').closest('table').outerHTML;
+
+  document.getElementById('print-report').innerHTML=`
+    <div class="rpt-hd">
+      <div>
+        <div class="rpt-hd-titulo">Relatório Financeiro — SP-010</div>
+        <div class="rpt-hd-sub">Ponte Graúna-Gaivotas · Construtora A. Gaspar S/A × SIURB/PMSP · Contrato 029/SIURB/2025</div>
+      </div>
+      <div class="rpt-hd-meta">Gerado em ${dStr} às ${hStr}<br>Dados até 30/04/2026</div>
+    </div>
+    <div class="rpt-filtro">Filtros: ${filtroStr}</div>
+    <div class="rpt-kpis">
+      <div class="rpt-kpi">
+        <div class="rpt-kpi-lbl">Custo Total Acumulado</div>
+        <div class="rpt-kpi-val">${tot}</div>
+        <div class="rpt-kpi-sub">Mai/25 – Abr/26</div>
+      </div>
+      <div class="rpt-kpi">
+        <div class="rpt-kpi-lbl">Faturamento Acumulado</div>
+        <div class="rpt-kpi-val" style="color:#166534">R$ 62.400.574,98</div>
+        <div class="rpt-kpi-sub">9 NFs emitidas · até Abr/2026</div>
+      </div>
+      <div class="rpt-kpi">
+        <div class="rpt-kpi-lbl">Resultado (Fat. − Custo)</div>
+        <div class="rpt-kpi-val" style="color:${salCor}">${sal}</div>
+        <div class="rpt-kpi-sub">${salSub}</div>
+      </div>
+    </div>
+    ${curvaImg?`<div class="rpt-section"><div class="rpt-section-titulo">Curva S — Desempenho Financeiro</div><img src="${curvaImg}" class="rpt-chart"></div>`:''}
+    <div class="rpt-section"><div class="rpt-section-titulo">Diagnóstico Mensal</div>${tblDiag}</div>
+    <div class="rpt-section"><div class="rpt-section-titulo">Curva ABC — Composição do Custo</div>${tblAbc}</div>
+    <div class="rpt-footer">
+      <span>PMO · Construtora A. Gaspar S.A. · Documento confidencial</span>
+      <span>${fname}</span>
+    </div>`;
+
+  document.title=fname;
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.title='Painel Financeiro — SP-010 · Construtora A. Gaspar';
+      btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Relatório PDF';
+      btn.disabled=false;
+    },1500);
+  },200);
+}
 </script>
+
+<div id="print-report"></div>
 </body>
 </html>
