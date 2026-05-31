@@ -671,8 +671,6 @@ const CORES = {
   'Locação de Veículos Leves':'#0369A1',
 };
 
-const CLS = Object.fromEntries(CATS.map(c=>[c.id, c.cls]));
-
 function categorizar(r) {
   const h = (r.hist||'').toUpperCase();
   const n = (r.nome||'').toUpperCase();
