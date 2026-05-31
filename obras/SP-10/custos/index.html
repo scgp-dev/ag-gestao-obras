@@ -6,6 +6,7 @@
 <title>Painel Financeiro — SP-010 · Construtora A. Gaspar</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --g-esc:#1A0D4A;--g-pri:#28156E;--g-med:#3D2490;--g-clr:#EAE7F5;--g-brd:#C5BDE8;
@@ -301,9 +302,55 @@ td.neutro{color:var(--cinza);}
   .kpi-grid{grid-template-columns:repeat(3,1fr);}
   .charts-2col{grid-template-columns:1fr;}
 }
+
+/* ── LOGIN (Google Auth) ── */
+#tela-login{position:fixed;inset:0;background:linear-gradient(140deg,#1A0D4A,#28166C);display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:22px;}
+.login-logo-box{background:#fff;border-radius:8px;padding:10px 22px;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.login-logo-txt{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#28156E;letter-spacing:.5px;}
+.login-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:36px 44px;text-align:center;width:380px;max-width:90vw;}
+.login-titulo{font-size:21px;font-weight:700;color:#fff;margin-bottom:6px;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:28px;line-height:1.6;}
+.login-card #g_id_onload,.login-card .g_id_signin{display:flex;justify-content:center;}
+.l-spinner{display:none;width:30px;height:30px;border:3px solid rgba(255,255,255,.12);border-top-color:#fff;border-radius:50%;animation:lspin .8s linear infinite;margin:16px auto 0;}
+@keyframes lspin{to{transform:rotate(360deg);}}
+.login-erro{display:none;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:8px;padding:10px 14px;font-size:11px;color:#FCA5A5;margin-top:16px;}
+.login-aviso{font-size:10px;color:rgba(255,255,255,.3);margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);line-height:1.6;}
+
+/* ── MENU DROPDOWN ── */
+.menu-wrap{position:relative;}
+.menu-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:7px 12px;display:flex;align-items:center;gap:7px;cursor:pointer;color:rgba(255,255,255,.85);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;}
+.menu-btn:hover{background:rgba(255,255,255,.16);}
+.menu-drop{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid var(--borda);border-radius:10px;box-shadow:0 12px 40px rgba(15,13,26,.25);min-width:252px;z-index:500;overflow:hidden;}
+.menu-drop.aberto{display:block;}
+.menu-grp{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--cinza);padding:11px 16px 4px;}
+.menu-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:#0F0D1A;text-decoration:none;transition:background .12s;}
+.menu-item:hover{background:var(--g-clr);}
+.menu-item.atual{color:var(--g-pri);font-weight:700;background:#F5F4FB;cursor:default;}
+.mi-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.menu-sep{height:1px;background:var(--borda);margin:4px 0;}
+.menu-sair{color:#DC2626;font-weight:600;border-top:1px solid var(--borda);margin-top:4px;}
 </style>
 </head>
 <body>
+
+<!-- ── TELA DE LOGIN (Google Auth) ── -->
+<div id="tela-login">
+  <div class="login-logo-box"><span class="login-logo-txt">A. GASPAR S.A.</span></div>
+  <div class="login-card">
+    <div class="login-titulo">Painel Financeiro — Custos</div>
+    <div class="login-sub">SP-010 · Ponte Graúna-Gaivotas<br>Acesso restrito — autentique-se com sua conta corporativa</div>
+    <div id="g_id_onload"
+         data-client_id="167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com"
+         data-callback="onGoogleSignIn"
+         data-auto_prompt="false"></div>
+    <div class="g_id_signin"
+         data-type="standard" data-size="large" data-theme="filled_blue"
+         data-text="signin_with" data-shape="rectangular" data-width="300"></div>
+    <div class="l-spinner" id="l-spinner"></div>
+    <div class="login-erro" id="login-erro">⚠️ Acesso não autorizado. Contate o administrador do sistema.</div>
+    <div class="login-aviso">Construtora A. Gaspar S.A. · Documento confidencial</div>
+  </div>
+</div>
 
 <header>
   <div style="display:flex;align-items:center;gap:10px">
@@ -311,6 +358,25 @@ td.neutro{color:var(--cinza);}
       border-radius:6px;padding:7px 9px;display:flex;align-items:center;text-decoration:none;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </a>
+    <div class="menu-wrap">
+      <button class="menu-btn" id="menu-btn" onclick="toggleMenu(event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        Relatórios
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="menu-drop" id="menu-drop">
+        <a class="menu-item" href="../../../index.html"><span class="mi-ic">🗺️</span> Portal Geral (Mapa)</a>
+        <div class="menu-grp">SP-010 · Graúna-Gaivotas</div>
+        <a class="menu-item" href="../fisico.html"><span class="mi-ic">📐</span> Avanço Físico</a>
+        <a class="menu-item" href="../financeiro.html"><span class="mi-ic">💰</span> Financeiro (Medições)</a>
+        <span class="menu-item atual"><span class="mi-ic">📊</span> Custos (atual)</span>
+        <div class="menu-grp">MG-004 · Rio São Francisco</div>
+        <a class="menu-item" href="../../MG-04/custos/index.html"><span class="mi-ic">📊</span> Custos</a>
+        <div class="menu-grp">MT-002 · Rio Vermelho</div>
+        <a class="menu-item" href="../../MT-02/MT-002_Relatorio_Gerencial.html"><span class="mi-ic">📑</span> Relatório Gerencial</a>
+        <a class="menu-item menu-sair" href="#" onclick="sairCustos();return false;"><span class="mi-ic">🚪</span> Sair</a>
+      </div>
+    </div>
     <div class="logo-box"><img src="data:image/png;base64,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" alt="A.Gaspar" style="height:34px;width:auto;display:block"></div>
     <div class="h-titulo">
       <h1>PAINEL FINANCEIRO</h1>
@@ -1409,5 +1475,46 @@ function gerarPDF(){
 </script>
 
 <div id="print-report"></div>
+
+<!-- ── AUTENTICAÇÃO GOOGLE + MENU ── -->
+<script>
+const CLIENT_ID='167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com';
+const WHITELIST=[
+  'jailtonsantos@construtoraagaspar.com.br',
+  'marcofrensel@construtoraagaspar.com.br',
+  'rodrigo.asfora@construtoraagaspar.com.br',
+];
+function onGoogleSignIn(response){
+  document.getElementById('l-spinner').style.display='block';
+  document.getElementById('login-erro').style.display='none';
+  try{
+    const payload=JSON.parse(atob(response.credential.split('.')[1]));
+    const email=(payload.email||'').toLowerCase();
+    if(!WHITELIST.includes(email)){
+      document.getElementById('l-spinner').style.display='none';
+      document.getElementById('login-erro').style.display='block';
+      return;
+    }
+    sessionStorage.setItem('user_email',email);
+    sessionStorage.setItem('user_nome',payload.name||'');
+    sessionStorage.setItem('user_avatar',payload.picture||'');
+    sessionStorage.setItem('user_token',response.credential);
+    document.getElementById('tela-login').style.display='none';
+  }catch(e){
+    document.getElementById('l-spinner').style.display='none';
+    document.getElementById('login-erro').style.display='block';
+  }
+}
+function sairCustos(){
+  sessionStorage.clear();
+  if(window.google&&google.accounts&&google.accounts.id) google.accounts.id.disableAutoSelect();
+  document.getElementById('tela-login').style.display='flex';
+}
+function toggleMenu(e){e.stopPropagation();document.getElementById('menu-drop').classList.toggle('aberto');}
+document.addEventListener('click',()=>{const d=document.getElementById('menu-drop');if(d)d.classList.remove('aberto');});
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('user_nome')) document.getElementById('tela-login').style.display='none';
+});
+</script>
 </body>
 </html>
