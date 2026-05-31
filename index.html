@@ -220,8 +220,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow',sans-serif
   margin-top:5px;
   background:rgba(12,8,30,.85);backdrop-filter:blur(8px);
   border:1px solid rgba(255,255,255,.1);
-  border-radius:20px;padding:3px 9px;
-  font-size:9px;font-weight:600;color:rgba(255,255,255,.7);
+  border-radius:20px;padding:3px 11px;
+  font-size:9px;font-weight:600;color:rgba(255,255,255,.85);
   white-space:nowrap;letter-spacing:.3px;
 }
 @keyframes pulse-y{
@@ -520,7 +520,7 @@ OBRAS.forEach(obra => {
         <div class="mk-body ${obra.status}" style="color:${cor}">
           ${svgBridge}
         </div>
-        <div class="mk-label">${obra.nome.split(' ').slice(0,2).join(' ')}</div>
+        <div class="mk-label">${obra.nome}</div>
       </div>`
   });
   const marker = L.marker([obra.lat, obra.lng], { icon:icone });
