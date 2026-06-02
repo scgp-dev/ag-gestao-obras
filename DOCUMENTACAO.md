@@ -403,7 +403,7 @@ no `index.html` e adicionar a nova chave `'MM/YYYY': valor`.
 | GitHub user | `scgp-dev` |
 | Git user (commits) | `scgp-dev <jailtonsantos@construtoraagaspar.com.br>` |
 | Google OAuth Client ID | `167891547522-nq3o4hb6qo1g1egq21c2s1sdsr1v124o.apps.googleusercontent.com` |
-| Whitelist de acesso | jailtonsantos@, marcofrensel@, rodrigo.asfora@ (todos @construtoraagaspar.com.br) |
+| Whitelist de acesso | jailtonsantos@, marcofrensel@, rodrigo.asfora@, marthaflor@ (todos @construtoraagaspar.com.br) |
 
 ---
 
